@@ -12,6 +12,8 @@ let left  = false;
 let gravity = 4;
 let sens = 2;
 
+let tabBricks=[]; 
+
 class Shape
 {
 	constructor (posX,posY,larg,h,radius,color)
@@ -93,7 +95,12 @@ function motion()
 	ctx.clearRect(0, 0, canvasW, canvasH); //delete canvas
 	ball.drawCircle();
 	paddle.drawRect();
-	drawbricks();
+	drawBricks(tabBricks);
+	console.log(tabBricks[0][0]);
+
+
+
+
 
 
 	/*******************Motion Ball gravity******************************/
@@ -123,15 +130,15 @@ function motion()
 	ball.posX += sens;
 
 	/*******************Motion Paddle************************************/
-	if(right && paddle.posX < canvasW-paddle.larg) paddle.posX+=10;
-    if(left  && paddle.posX > 0)                   paddle.posX-=10;
+	if(right && paddle.posX < canvasW-paddle.larg) paddle.posX+=8;
+    if(left  && paddle.posX > 0)                   paddle.posX-=8;
     /********************************************************************/
 
 
 
 
 
-	requestAnimationFrame(motion); //why here?
+	//requestAnimationFrame(motion); //why here?
 
 
 }requestAnimationFrame(motion);
@@ -139,25 +146,22 @@ function motion()
 
 const brick = new Shape(10,10,75,20,0,"orange"); //(posX,posY,larg,h,radius,color)
 
-function drawbricks()
+function drawBricks(tab)
 {
-	let tab=[]; 
-
-
-	for(let row =0; row<5; row++)
+	for(let line =0; line<5; line++)
 	{
+		tab[line] = []; //create array of array
+
 		for (let col=0; col<8; col++)
-		{
-			tab[col]=[];	//create array of array
-			tab[col][row] = Object.create(brick); //each array is a brick objet
-			tab[col][row].posX = brick.posX + (10+brick.larg)*col;
-			tab[col][row].posY = brick.posY + (10+brick.h)*row;
-			tab[col][row].drawRect();
+		{	
+			tab[line][col] = Object.create(brick); //each array is a brick objet
+			tab[line][col].posX = brick.posX + (10+brick.larg)*col;
+			tab[line][col].posY = brick.posY + (10+brick.h)*line;
+			tab[line][col].drawRect();
 		}
 	}
 
 
-	
 }
 
 
