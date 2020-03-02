@@ -1,7 +1,7 @@
 window.onload = () =>{
 "use strict";
 /*****************************Start of onload**********************/
-let canvasH = myCanvas.height = 500;
+let canvasH = myCanvas.height = 512;
 let canvasW = myCanvas.width  = 700;
 const ctx   = myCanvas.getContext("2d");
 
@@ -9,8 +9,8 @@ const ctx   = myCanvas.getContext("2d");
 
 let right = false;
 let left  = false;
-let gravity = 4;
-let sens = 2;
+let gravity = 5;
+let sens = 4;
 
 let tabBricks=[]; 
 
@@ -42,6 +42,8 @@ class Shape
     	ctx.rect(this.posX,this.posY,this.larg,this.h);
     	ctx.fillStyle = this.color;
     	ctx.fill();
+    	ctx.strokeStyle = "gold";
+    	ctx.stroke();
 	}
 
 	control()
@@ -56,37 +58,17 @@ class Shape
     		else if(e.key == "ArrowLeft" ) left  = false;
    		};
 	}
-
-}
-
-
-class Bricks
-{
-	constructor (row,col,larg,h,padding,top,left)
-	{
-		this.row = row;
-		this.col = col;
-		this.larg = larg;
-		this.h = h;
-		this.padding = padding;
-		this.top = top;
-		this.left = left;
-	}
-
 }
 
 
 
-const ball = new Shape(100,200,0,0,20,"red");
 
-const paddle = new Shape(0,0,100,5,0,"blue");
+const ball = new Shape(100,200,0,0,10,"red");
+
+const paddle = new Shape(0,0,200,20,0,"blue");
 paddle.posX = (canvasW - paddle.larg)/2;
 paddle.posY = canvasH - paddle.h;
 paddle.control();
-
-
-
-
 
 
 function motion()
@@ -95,58 +77,106 @@ function motion()
 	ctx.clearRect(0, 0, canvasW, canvasH); //delete canvas
 	ball.drawCircle();
 	paddle.drawRect();
-	drawBricks(tabBricks);
-	console.log(tabBricks[0][0]);
+	
+	for(let line of tabBricks)
+		for (let brick of line)
+			if (brick.status == 1)
+				brick.drawRect();
 
+	
 
+	/*******************Motion Paddle************************************/
+	if(right && paddle.posX < canvasW-paddle.larg) paddle.posX+=10;
+    if(left  && paddle.posX > 0)                   paddle.posX-=10;
+    /********************************************************************/
 
-
-
-
-	/*******************Motion Ball gravity******************************/
-	//if (ball.posY - ball.radius < 0 || ball.posY + ball.radius > canvasH )
-
-	if (ball.posY - ball.radius < 0 // rebond sur le toit
-		||
-	   (ball.posY + ball.radius > paddle.posY  //rebond sur le paddle
-		  && ball.posX + ball.radius > paddle.posX 
-	      && ball.posX < paddle.posX+ paddle.larg))
-		gravity =- gravity;
-
-	else if (ball.posY + ball.radius >= canvasH)
+	/*******************Wall Collision******************************/
+	if(ball.posY - ball.radius < 0) //roof
 	{
-		alert("perdu");
+		gravity = -gravity; 
+		ball.posY = ball.radius +1;
+	}
+
+	if(ball.posX - ball.radius < 0 ) //wall left
+	{	
+		sens = -sens; 
+		ball.posX = ball.radius +1;
+	}
+
+	if(ball.posX + ball.radius > canvasW) //wall right
+	{
+		sens = -sens;
+		ball.posX = canvasW - ball.radius -1;
+	}
+
+	if (ball.posY + ball.radius >= canvasH) //ground
+	{
+		alert("Game Over!!!");
 		document.location.reload();
 	}
+
+	/********************Paddle Collision*******************************/
+	if(ball.posX >= paddle.posX && ball.posX <= paddle.posX + paddle.larg) //ball between paddle limits in X
+		if(ball.posY + ball.radius > paddle.posY && ball.posY < canvasH) //ball between paddle limitis in Y
+		{
+			gravity = -gravity;
+			ball.posY = paddle.posY - ball.radius -1 //out ball from paddle
+
+			if(right)
+				sens += 2; //speed right
+
+			if (left)
+				sens -= 2; //speed left
+
+		}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+    /******************Brick Collision***********************************/
+	for (let line of tabBricks)
+		for (let brick of line)
+
+			if(brick.posX - ball.posX < ball.radius &&  ball.posX < brick.posX+brick.larg+ball.radius)
+				if(ball.posY - ball.radius  <= brick.posY +brick.h && brick.status == 1)
+
+			{
+				gravity      =- gravity;
+				brick.status = 0;
+				sens = 4;
+			}
+
+
+
 
 
 	/*************Action************************/
 	ball.posY += gravity
-
-	/*******************Motion Ball gravity******************************/
-	if (ball.posX - ball.radius < 0 || ball.posX + ball.radius > canvasW)
-		sens = -sens;
-
 	ball.posX += sens;
+	/*******************************************/
 
-	/*******************Motion Paddle************************************/
-	if(right && paddle.posX < canvasW-paddle.larg) paddle.posX+=8;
-    if(left  && paddle.posX > 0)                   paddle.posX-=8;
-    /********************************************************************/
-
-
-
-
-
-	//requestAnimationFrame(motion); //why here?
+	requestAnimationFrame(motion); //why here?
 
 
 }requestAnimationFrame(motion);
 
 
-const brick = new Shape(10,10,75,20,0,"orange"); //(posX,posY,larg,h,radius,color)
+const bricks = new Shape(10,10,75,20,0,"orange"); //(posX,posY,larg,h,radius,color)
 
-function drawBricks(tab)
+
+function createBricks(tab)
 {
 	for(let line =0; line<5; line++)
 	{
@@ -154,15 +184,13 @@ function drawBricks(tab)
 
 		for (let col=0; col<8; col++)
 		{	
-			tab[line][col] = Object.create(brick); //each array is a brick objet
-			tab[line][col].posX = brick.posX + (10+brick.larg)*col;
-			tab[line][col].posY = brick.posY + (10+brick.h)*line;
-			tab[line][col].drawRect();
+			tab[line][col] = Object.create(bricks); //each array is a brick objet
+			tab[line][col].posX = bricks.posX + (10+bricks.larg)*col;
+			tab[line][col].posY = bricks.posY + (10+bricks.h)*line;
+			tab[line][col].status = 1; // add new property 
 		}
 	}
-
-
-}
+}; createBricks(tabBricks);
 
 
 
