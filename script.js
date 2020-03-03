@@ -1,18 +1,9 @@
 window.onload = () =>{
 "use strict";
 /*****************************Start of onload**********************/
-let canvasH = myCanvas.height = 512;
+let canvasH = myCanvas.height = 500;
 let canvasW = myCanvas.width  = 700;
 const ctx   = myCanvas.getContext("2d");
-
-
-
-let right = false;
-let left  = false;
-let gravity = 5;
-let sens = 4;
-
-let tabBricks=[]; 
 
 class Shape
 {
@@ -61,14 +52,25 @@ class Shape
 }
 
 
-
-
-const ball = new Shape(100,200,0,0,10,"red");
-
-const paddle = new Shape(0,0,200,20,0,"blue");
+const paddle = new Shape(0,0,125,20,0,"blue");
 paddle.posX = (canvasW - paddle.larg)/2;
 paddle.posY = canvasH - paddle.h;
+let right = false;
+let left  = false;
 paddle.control();
+
+const ball = new Shape(paddle.posX,paddle.posY,0,0,5,"red");
+const bricks = new Shape(10,10,75,20,0,"orange"); //(posX,posY,larg,h,radius,color)
+
+let gravity = 4;
+let sens = 4;
+
+let tabBricks=[]; 
+
+
+
+
+
 
 
 function motion()
@@ -77,13 +79,29 @@ function motion()
 	ctx.clearRect(0, 0, canvasW, canvasH); //delete canvas
 	ball.drawCircle();
 	paddle.drawRect();
+	let count = 0;
 	
 	for(let line of tabBricks)
 		for (let brick of line)
 			if (brick.status == 1)
+			{
 				brick.drawRect();
-
+				count++;
+			}
+			
+		
+	if (count == 0) //Victory
+	{
+		ctx.fillStyle = "red";
+		ctx.font = "60px orbitron";
+		ctx.fillText("VICTORY!!!",170,100);
+		ctx.strokeStyle = "blue";
+		ctx.strokeText("VICTORY!!!",170,100);
+		alert("REPLAY?");
+		document.location.reload();
+	}
 	
+
 
 	/*******************Motion Paddle************************************/
 	if(right && paddle.posX < canvasW-paddle.larg) paddle.posX+=10;
@@ -91,19 +109,19 @@ function motion()
     /********************************************************************/
 
 	/*******************Wall Collision******************************/
-	if(ball.posY - ball.radius < 0) //roof
+	if(ball.posY - ball.radius <= 0) //roof
 	{
 		gravity = -gravity; 
 		ball.posY = ball.radius +1;
 	}
 
-	if(ball.posX - ball.radius < 0 ) //wall left
+	if(ball.posX - ball.radius <= 0 ) //wall left
 	{	
 		sens = -sens; 
 		ball.posX = ball.radius +1;
 	}
 
-	if(ball.posX + ball.radius > canvasW) //wall right
+	if(ball.posX + ball.radius >= canvasW) //wall right
 	{
 		sens = -sens;
 		ball.posX = canvasW - ball.radius -1;
@@ -111,54 +129,83 @@ function motion()
 
 	if (ball.posY + ball.radius >= canvasH) //ground
 	{
-		alert("Game Over!!!");
+		ctx.fillStyle = "red";
+		ctx.font = "60px orbitron";
+		ctx.fillText("GAME OVER!!!",140,100);
+		ctx.strokeStyle = "blue";
+		ctx.strokeText("GAME OVER!!!",140,100);
+		alert("REPLAY?");
 		document.location.reload();
 	}
 
 	/********************Paddle Collision*******************************/
 	if(ball.posX >= paddle.posX && ball.posX <= paddle.posX + paddle.larg) //ball between paddle limits in X
-		if(ball.posY + ball.radius > paddle.posY && ball.posY < canvasH) //ball between paddle limitis in Y
+		if(ball.posY + ball.radius >= paddle.posY && ball.posY <= canvasH) //ball between paddle limitis in Y
 		{
 			gravity = -gravity;
 			ball.posY = paddle.posY - ball.radius -1 //out ball from paddle
 
-			if(right)
+			if(right) 
+			{
 				sens += 2; //speed right
+				sens = (sens>8)? 8: sens;
+			}
 
-			if (left)
+			if(left)  
+			{
 				sens -= 2; //speed left
+				sens  = (sens<-8)? -8: sens;
+			}
 
 		}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
     /******************Brick Collision***********************************/
 	for (let line of tabBricks)
 		for (let brick of line)
-
-			if(brick.posX - ball.posX < ball.radius &&  ball.posX < brick.posX+brick.larg+ball.radius)
-				if(ball.posY - ball.radius  <= brick.posY +brick.h && brick.status == 1)
-
+		{
+			if(ball.posX >= brick.posX && ball.posX <= brick.posX + brick.larg && brick.status ==1) //ball between brick limits in X
 			{
-				gravity      =- gravity;
-				brick.status = 0;
-				sens = 4;
+				if(ball.posY - ball.radius <= brick.posY + brick.h//ball under brick
+					&& ball.posY - ball.radius > brick.posY + brick.h -10)
+				{
+					gravity =- gravity;
+					brick.status = 0; 
+					
+				}
+
+				else if (ball.posY + ball.radius >= brick.posY //ball over brick
+					&& ball.posY + ball.radius < brick.posY + 10)
+				{
+					gravity =- gravity;
+					brick.status = 0;
+					
+				}
 			}
 
 
+			if(ball.posY >= brick.posY && ball.posY <= brick.posY + brick.h && brick.status ==1) 
+			{
+				if(ball.posX + ball.radius >= brick.posX && ball.posX + ball.radius < brick.posX +10) //left brick side
+				{
+					sens = -sens;
+					brick.status = 0;
+				}
+
+				else if(ball.posX - ball.radius <= brick.posX + brick.larg 
+					 && ball.posX - ball.radius >  brick.posX + brick.larg-10) //right side OK
+				{
+					sens = -sens;
+					brick.status = 0;
+				}
+			}
+
+		}
+
+
+				
+				
+				
 
 
 
@@ -173,7 +220,7 @@ function motion()
 }requestAnimationFrame(motion);
 
 
-const bricks = new Shape(10,10,75,20,0,"orange"); //(posX,posY,larg,h,radius,color)
+
 
 
 function createBricks(tab)
@@ -190,6 +237,7 @@ function createBricks(tab)
 			tab[line][col].status = 1; // add new property 
 		}
 	}
+
 }; createBricks(tabBricks);
 
 
