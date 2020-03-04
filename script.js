@@ -1,17 +1,17 @@
 window.onload = () =>{
 "use strict";
 /*****************************Start of onload**********************/
-let canvasH = myCanvas.height = 500;
-let canvasW = myCanvas.width  = 700;
-const ctx   = myCanvas.getContext("2d");
+const canvasH = myCanvas.height = 500;
+const canvasW = myCanvas.width  = 700;
+const ctx     = myCanvas.getContext("2d");
 
 /******************************Audios******************************/
-const tetris = new Audio("sounds/tetris.mp3");
+const tetris   = new Audio("sounds/tetris.mp3");
 const gameover = new Audio("sounds/gameover.mp3");
-const broken = new Audio("sounds/broken.wav");
-const victory = new Audio("sounds/victory.mp3");
+const broken   = new Audio("sounds/broken.wav");
+const victory  = new Audio("sounds/victory.mp3");
 
-
+/************************Class Shape*******************************/
 class Shape
 {
 	constructor (posX,posY,larg,h,radius,color)
@@ -22,9 +22,7 @@ class Shape
 		this.h = h;
 		this.radius = radius;
 		this.color = color;
-
 	}
-
 
 	drawCircle()
 	{
@@ -60,22 +58,20 @@ class Shape
 
 
 const paddle = new Shape(0,0,125,20,0,"blue");
-paddle.posX = (canvasW - paddle.larg)/2;
-paddle.posY = canvasH - paddle.h;
-let paddleSpeed = 10;
-let right = false;
-let left  = false;
-paddle.control();
+paddle.posX  = (canvasW - paddle.larg)/2;
+paddle.posY  =  canvasH - paddle.h;
+let paddleSpeed = 10; paddle.control();
 
-const ball = new Shape(paddle.posX+paddle.larg/2,paddle.posY-5,0,0,5,"red");
+const ball   = new Shape(paddle.posX+paddle.larg/2,paddle.posY-5,0,0,5,"red");
 const bricks = new Shape(10,10,75,20,0,"orange"); //(posX,posY,larg,h,radius,color)
 
-let gravity = 0;
-let sens = 0;
+let gravity, sens, tabBricks=[], count;
 
-let tabBricks=[];
+let right         = false;
+let left          = false;
+let stopAnimation = false;
+let beginGame     = false; //to avoid space bar function
 
-let stopAnimation = 0;
 
 
 
@@ -86,7 +82,16 @@ function motion()
 	ctx.clearRect(0, 0, canvasW, canvasH); //clear canvas
 	ball.drawCircle();
 	paddle.drawRect();
-	let count;
+
+	if(beginGame == false)
+	{
+		ball.posX = paddle.posX+paddle.larg/2
+		ball.posY = paddle.posY-5; 
+		gravity = 0;
+		sens    = 0;
+		count   = 0;
+	}
+
 	
 	for(let line of tabBricks)
 		for (let brick of line)
@@ -96,17 +101,11 @@ function motion()
 				count++;
 			}
 	
-	drawVictory(count);
-
-	
+	if (count == 0) drawVictory();
 
 
-	/*******************Motion Paddle************************************/
-	if(right && paddle.posX < canvasW-paddle.larg) paddle.posX+= paddleSpeed;
-    if(left  && paddle.posX > 0)                   paddle.posX-= paddleSpeed;
   
-
-	/*******************Wall Collision******************************/
+	/********************************Wall Collision************************************/
 	if(ball.posY - ball.radius <= 0) //roof
 	{
 		gravity = -gravity; 
@@ -127,30 +126,23 @@ function motion()
 
 	if (ball.posY + ball.radius >= canvasH) //ground
 		drawGameOver();
+	
+	/********************************Motion Paddle***************************************/
+	if(right && paddle.posX < canvasW-paddle.larg) paddle.posX+= paddleSpeed;
+    if(left  && paddle.posX > 0)                   paddle.posX-= paddleSpeed;
 
-	/********************Paddle Collision*******************************/
+	/********************************Paddle Collision*************************************/
 	if(ball.posX >= paddle.posX && ball.posX <= paddle.posX + paddle.larg) //ball between paddle limits in X
 		if(ball.posY + ball.radius >= paddle.posY && ball.posY <= canvasH) //ball between paddle limitis in Y
 		{
 			gravity = -gravity;
 			ball.posY = paddle.posY - ball.radius -1 //out ball from paddle
 
-			if(right) 
-			{
-				sens += 2; //speed right
-				sens = (sens>8)? 8: sens;
-			}
-
-			if(left)  
-			{
-				sens -= 2; //speed left
-				sens  = (sens<-8)? -8: sens;
-			}
-
+			if     (right) sens = +Math.abs(sens); 	
+			else if(left)  sens = -Math.abs(sens); 
 		}
 
-
-    /******************Brick Collision***********************************/
+    /*********************************Brick Collision***********************************/
 	for (let line of tabBricks)
 		for (let brick of line)
 		{
@@ -163,7 +155,6 @@ function motion()
 					brick.status = 0;
 					power(brick);
 					broken.play();
-					
 				}
 
 				else if (ball.posY + ball.radius >= brick.posY //ball over brick
@@ -196,24 +187,19 @@ function motion()
 					broken.play();
 				}
 			}
-
 		}
 
-
-	/*************Action************************/
+	/*************Final Action************************/
 	ball.posY += gravity
 	ball.posX += sens;
-	/*******************************************/
+	/*************************************************/
 
-	if (stopAnimation!=1)
-	requestAnimationFrame(motion); //why here?
+	if (!stopAnimation) requestAnimationFrame(motion);
 }requestAnimationFrame(motion);
 
 
 
-
-
-
+/************************Creation of Bricks**************************************/
 
 function createBricks(tab)
 {
@@ -233,10 +219,10 @@ function createBricks(tab)
 
 		for (let col=0; col<8; col++)
 		{	
-			tab[line][col] = Object.create(bricks); //each array is a brick objet
-			tab[line][col].posX = bricks.posX + (2+bricks.larg)*col;
-			tab[line][col].posY = bricks.posY + (2+bricks.h)*line;
-			tab[line][col].color = tabColours[Math.round(Math.random()*tabColours.length)];
+			tab[line][col]        = Object.create(bricks); //each array is a brick objet
+			tab[line][col].posX   = bricks.posX + (2+bricks.larg)*col;
+			tab[line][col].posY   = bricks.posY + (2+bricks.h)*line;
+			tab[line][col].color  = tabColours[Math.round(Math.random()*tabColours.length)];
 			tab[line][col].status = 1; // add new property 
 			
 		}
@@ -244,7 +230,7 @@ function createBricks(tab)
 
 }; createBricks(tabBricks);
 
-
+/************************************Function Bricks Powers***********************/
 function power(item)
 {
 	if(item.color == "orangered")
@@ -288,36 +274,29 @@ function power(item)
 
 }
 
-
-function drawVictory(a)
+/***********************************Functions Victory/Game Over***************/
+function drawVictory()
 {
-	if (a ==0) //Victory
-	{
-		ctx.beginPath();
-		ctx.rect(0,canvasH/2-40,canvasW,100);
-		ctx.fillStyle = "white";
-		ctx.fill();
-		ctx.strokeStyle = "red";
-		ctx.stroke();
+	ctx.beginPath();
+	ctx.rect(0,canvasH/2-40,canvasW,100);
+	ctx.fillStyle = "white";
+	ctx.fill();
+	ctx.strokeStyle = "red";
+	ctx.stroke();
 	
-		ctx.fillStyle = "blue";
-		ctx.font = "70px orbitron";
-		ctx.fillText("VICTORY!",150,canvasH/2+30);
-		ctx.strokeStyle = "red";
-		ctx.strokeText("VICTORY!",150,canvasH/2+30);
+	ctx.fillStyle = "blue";
+	ctx.font = "70px orbitron";
+	ctx.fillText("VICTORY!",150,canvasH/2+30);
+	ctx.strokeStyle = "red";
+	ctx.strokeText("VICTORY!",150,canvasH/2+30);
 		
-		tetris.pause();
-		victory.play();
-		stopAnimation = 1;
-		
-		info.textContent = "Press Enter to play again";
+	tetris.pause();
+	victory.play();
+	stopAnimation = true;	
+	info.textContent = "Press Enter to play again";
 
-		document.onkeypress = (e) =>
-		{
-			if(e.key == "Enter" && stopAnimation == 1)
-			document.location.reload();
-		}
-	}
+	document.onkeypress = (e) => {if(e.key == "Enter") document.location.reload();};
+	
 }
 
 function drawGameOver()
@@ -337,43 +316,40 @@ function drawGameOver()
 
 	tetris.pause();
 	gameover.play();
-	stopAnimation = 1;
+	stopAnimation = true;
 
 	info.textContent = "Press Enter to play again";
 
-	document.onkeypress = (e) =>
-	{
-		if(e.key == "Enter" && stopAnimation == 1)
-		document.location.reload();
-	}
+	document.onkeypress = (e) => {if(e.key == "Enter") document.location.reload();};
 }
 
 
 
-
-
-/*********************Mouse Position********************************/
- myCanvas.addEventListener("mousemove", function(event) {
-	 let decalage = myCanvas.getBoundingClientRect(); //donne la position du canvas
-	 let border = 10; //border CSS of canvas
-	gps.textContent = `Coordonnées Souris => x:${event.clientX-decalage.left-border} 
-									   	   / y:${event.clientY-decalage.top-border}`;
-	});
 	
 
 /*******************Launch Game *************************************/
 document.onkeypress = (e) =>
 {
-	if(e.key == " ")
+	if(e.key == " " && beginGame == 0)
 	{
 		sens = 4;
 		gravity = -4;
 		tetris.play();
 		tetris.loop = true;
 		info.textContent ="";
+		beginGame = true;
 	}
 
 };
+
+
+/*********************Mouse Position********************************/
+myCanvas.addEventListener("mousemove", function(event) {
+	let decalage = myCanvas.getBoundingClientRect(); //donne la position du canvas
+	let border = 10; //border CSS of canvas
+   gps.textContent = `Coordonnées Souris => x:${event.clientX-decalage.left-border} 
+											 / y:${event.clientY-decalage.top-border}`;
+   });
 
 
 /*****************************End of onload**********************/
