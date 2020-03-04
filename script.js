@@ -5,6 +5,13 @@ let canvasH = myCanvas.height = 500;
 let canvasW = myCanvas.width  = 700;
 const ctx   = myCanvas.getContext("2d");
 
+/******************************Audios******************************/
+const tetris = new Audio("sounds/tetris.mp3");
+const gameover = new Audio("sounds/gameover.mp3");
+const broken = new Audio("sounds/broken.wav");
+const victory = new Audio("sounds/victory.mp3");
+
+
 class Shape
 {
 	constructor (posX,posY,larg,h,radius,color)
@@ -32,9 +39,9 @@ class Shape
 		ctx.beginPath();
     	ctx.rect(this.posX,this.posY,this.larg,this.h);
     	ctx.fillStyle = this.color;
-    	ctx.fill();
-    	ctx.strokeStyle = "gold";
-    	ctx.stroke();
+		ctx.fill();
+		ctx.strokeStyle = "black";
+		ctx.stroke();
 	}
 
 	control()
@@ -55,20 +62,20 @@ class Shape
 const paddle = new Shape(0,0,125,20,0,"blue");
 paddle.posX = (canvasW - paddle.larg)/2;
 paddle.posY = canvasH - paddle.h;
+let paddleSpeed = 10;
 let right = false;
 let left  = false;
 paddle.control();
 
-const ball = new Shape(paddle.posX,paddle.posY,0,0,5,"red");
+const ball = new Shape(paddle.posX+paddle.larg/2,paddle.posY-5,0,0,5,"red");
 const bricks = new Shape(10,10,75,20,0,"orange"); //(posX,posY,larg,h,radius,color)
 
-let gravity = 4;
-let sens = 4;
+let gravity = 0;
+let sens = 0;
 
-let tabBricks=[]; 
+let tabBricks=[];
 
-
-
+let stopAnimation = 0;
 
 
 
@@ -76,10 +83,10 @@ let tabBricks=[];
 function motion()
 {
 	/******************Draw Shape***************************************/
-	ctx.clearRect(0, 0, canvasW, canvasH); //delete canvas
+	ctx.clearRect(0, 0, canvasW, canvasH); //clear canvas
 	ball.drawCircle();
 	paddle.drawRect();
-	let count = 0;
+	let count;
 	
 	for(let line of tabBricks)
 		for (let brick of line)
@@ -88,25 +95,16 @@ function motion()
 				brick.drawRect();
 				count++;
 			}
-			
-		
-	if (count == 0) //Victory
-	{
-		ctx.fillStyle = "red";
-		ctx.font = "60px orbitron";
-		ctx.fillText("VICTORY!!!",170,100);
-		ctx.strokeStyle = "blue";
-		ctx.strokeText("VICTORY!!!",170,100);
-		alert("REPLAY?");
-		document.location.reload();
-	}
+	
+	drawVictory(count);
+
 	
 
 
 	/*******************Motion Paddle************************************/
-	if(right && paddle.posX < canvasW-paddle.larg) paddle.posX+=10;
-    if(left  && paddle.posX > 0)                   paddle.posX-=10;
-    /********************************************************************/
+	if(right && paddle.posX < canvasW-paddle.larg) paddle.posX+= paddleSpeed;
+    if(left  && paddle.posX > 0)                   paddle.posX-= paddleSpeed;
+  
 
 	/*******************Wall Collision******************************/
 	if(ball.posY - ball.radius <= 0) //roof
@@ -128,15 +126,7 @@ function motion()
 	}
 
 	if (ball.posY + ball.radius >= canvasH) //ground
-	{
-		ctx.fillStyle = "red";
-		ctx.font = "60px orbitron";
-		ctx.fillText("GAME OVER!!!",140,100);
-		ctx.strokeStyle = "blue";
-		ctx.strokeText("GAME OVER!!!",140,100);
-		alert("REPLAY?");
-		document.location.reload();
-	}
+		drawGameOver();
 
 	/********************Paddle Collision*******************************/
 	if(ball.posX >= paddle.posX && ball.posX <= paddle.posX + paddle.larg) //ball between paddle limits in X
@@ -170,7 +160,9 @@ function motion()
 					&& ball.posY - ball.radius > brick.posY + brick.h -10)
 				{
 					gravity =- gravity;
-					brick.status = 0; 
+					brick.status = 0;
+					power(brick);
+					broken.play();
 					
 				}
 
@@ -179,7 +171,8 @@ function motion()
 				{
 					gravity =- gravity;
 					brick.status = 0;
-					
+					power(brick);
+					broken.play();
 				}
 			}
 
@@ -190,6 +183,8 @@ function motion()
 				{
 					sens = -sens;
 					brick.status = 0;
+					power(brick);
+					broken.play();
 				}
 
 				else if(ball.posX - ball.radius <= brick.posX + brick.larg 
@@ -197,16 +192,12 @@ function motion()
 				{
 					sens = -sens;
 					brick.status = 0;
+					power(brick);
+					broken.play();
 				}
 			}
 
 		}
-
-
-				
-				
-				
-
 
 
 	/*************Action************************/
@@ -214,10 +205,11 @@ function motion()
 	ball.posX += sens;
 	/*******************************************/
 
+	if (stopAnimation!=1)
 	requestAnimationFrame(motion); //why here?
-
-
 }requestAnimationFrame(motion);
+
+
 
 
 
@@ -225,6 +217,16 @@ function motion()
 
 function createBricks(tab)
 {
+	const tabColours = ["darkcyan","aqua","lightcyan","powderblue",
+						"olivedrab","limegreen","darkseagreen",
+						"orangered","firebrick",
+						"hotpink","lightsalmon","mistyrose",
+						"gold",
+						"slategray","white","grey","dimgray",
+						"purple","fuchsia",
+						"black"
+						]; 
+
 	for(let line =0; line<5; line++)
 	{
 		tab[line] = []; //create array of array
@@ -232,13 +234,119 @@ function createBricks(tab)
 		for (let col=0; col<8; col++)
 		{	
 			tab[line][col] = Object.create(bricks); //each array is a brick objet
-			tab[line][col].posX = bricks.posX + (10+bricks.larg)*col;
-			tab[line][col].posY = bricks.posY + (10+bricks.h)*line;
+			tab[line][col].posX = bricks.posX + (2+bricks.larg)*col;
+			tab[line][col].posY = bricks.posY + (2+bricks.h)*line;
+			tab[line][col].color = tabColours[Math.round(Math.random()*tabColours.length)];
 			tab[line][col].status = 1; // add new property 
+			
 		}
 	}
 
 }; createBricks(tabBricks);
+
+
+function power(item)
+{
+	if(item.color == "orangered")
+		{
+			sens = (sens>=0)?  8 : -8;
+			tetris.playbackRate = 1.5;
+		}
+
+	else if(item.color == "hotpink")
+	{	
+		sens = (sens>=0)?  2 : -2;
+		gravity = (gravity>=0)?  -2 : +2;
+		tetris.playbackRate = 0.8;
+	}
+	
+	else if(item.color == "limegreen")
+		sens = 0;
+
+	else if(item.color == "gold")
+		paddle.larg+=30;
+	
+	else if(item.color == "fuchsia")
+		paddle.larg-=20;
+
+	else if(item.color == "white")
+		paddleSpeed = 6;
+	
+	else if(item.color == "aqua")
+		paddleSpeed = 20;
+
+	else if(item.color == "black")
+		ball.radius = 20;
+
+	else
+	{
+		gravity = (gravity>=0)?  4 : -4;
+		paddleSpeed = 10;
+		tetris.playbackRate = 1;
+		ball.radius = 5;
+	}
+
+}
+
+
+function drawVictory(a)
+{
+	if (a ==0) //Victory
+	{
+		ctx.beginPath();
+		ctx.rect(0,canvasH/2-40,canvasW,100);
+		ctx.fillStyle = "white";
+		ctx.fill();
+		ctx.strokeStyle = "red";
+		ctx.stroke();
+	
+		ctx.fillStyle = "blue";
+		ctx.font = "70px orbitron";
+		ctx.fillText("VICTORY!",150,canvasH/2+30);
+		ctx.strokeStyle = "red";
+		ctx.strokeText("VICTORY!",150,canvasH/2+30);
+		
+		tetris.pause();
+		victory.play();
+		stopAnimation = 1;
+		
+		info.textContent = "Press Enter to play again";
+
+		document.onkeypress = (e) =>
+		{
+			if(e.key == "Enter" && stopAnimation == 1)
+			document.location.reload();
+		}
+	}
+}
+
+function drawGameOver()
+{
+	ctx.beginPath();
+    ctx.rect(0,canvasH/2-40,canvasW,100);
+    ctx.fillStyle = "white";
+	ctx.fill();
+	ctx.strokeStyle = "red";
+	ctx.stroke();
+
+	ctx.fillStyle = "blue";
+	ctx.font = "70px orbitron";
+	ctx.fillText("GAME OVER",100,canvasH/2+30);
+	ctx.strokeStyle = "red";
+	ctx.strokeText("GAME OVER",100,canvasH/2+30);
+
+	tetris.pause();
+	gameover.play();
+	stopAnimation = 1;
+
+	info.textContent = "Press Enter to play again";
+
+	document.onkeypress = (e) =>
+	{
+		if(e.key == "Enter" && stopAnimation == 1)
+		document.location.reload();
+	}
+}
 
 
 
@@ -246,40 +354,27 @@ function createBricks(tab)
 
 /*********************Mouse Position********************************/
  myCanvas.addEventListener("mousemove", function(event) {
- 	let decalage = myCanvas.getBoundingClientRect(); //donne la position du canvas
-    gps.textContent = `Coordonnées Souris => x:${event.clientX-decalage.left} / y:${event.clientY-decalage.top}`;
-    });
- /*********************Mouse Position********************************/
+	 let decalage = myCanvas.getBoundingClientRect(); //donne la position du canvas
+	 let border = 10; //border CSS of canvas
+	gps.textContent = `Coordonnées Souris => x:${event.clientX-decalage.left-border} 
+									   	   / y:${event.clientY-decalage.top-border}`;
+	});
+	
 
+/*******************Launch Game *************************************/
+document.onkeypress = (e) =>
+{
+	if(e.key == " ")
+	{
+		sens = 4;
+		gravity = -4;
+		tetris.play();
+		tetris.loop = true;
+		info.textContent ="";
+	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+};
 
 
 /*****************************End of onload**********************/
 };
-
-	/*
-	ctx.globalCompositeOperation = 'lighter';
-	imgData = ctx.getImageData(0, 490, 700, 10);
-	for (let i=0; i<imgData.data.length;i+=4) //collision by color difference
-	{
-		if (imgData.data[i] == 255 && imgData.data[i+2] == 255)
-		{
-			gravity =-gravity;
-			break;
-		}
-	}*/
