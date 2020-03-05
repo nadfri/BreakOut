@@ -30,6 +30,11 @@ body{
     100%{opacity: 1;}
     }
 
+#speaker{
+  float: right;
+  cursor: pointer;
+}
+
 
 #myCanvas{ 
     margin: auto;

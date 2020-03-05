@@ -11,6 +11,11 @@ const gameover = new Audio("sounds/gameover.mp3");
 const broken   = new Audio("sounds/broken.wav");
 const victory  = new Audio("sounds/victory.mp3");
 
+const tabAudio = [tetris,gameover,broken,victory];
+
+let soundActive = true;
+
+
 /************************Class Shape*******************************/
 class Shape
 {
@@ -57,12 +62,12 @@ class Shape
 }
 
 
-const paddle = new Shape(0,0,125,20,0,"blue");
+const paddle = new Shape(0,0,200,20,0,"blue");
 paddle.posX  = (canvasW - paddle.larg)/2;
 paddle.posY  =  canvasH - paddle.h;
-let paddleSpeed = 10; paddle.control();
+let paddleSpeed = 5; paddle.control();
 
-const ball   = new Shape(paddle.posX+paddle.larg/2,paddle.posY-5,0,0,5,"red");
+const ball   = new Shape(paddle.posX+paddle.larg/2,paddle.posY-5,0,0,20,"red");
 
 let gravity, sens, tabBricks=[], count;
 
@@ -70,6 +75,7 @@ let right         = false;
 let left          = false;
 let stopAnimation = false;
 let beginGame     = false; //to avoid space bar function
+
 
 
 
@@ -148,20 +154,20 @@ function motion()
 			if(ball.posX >= brick.posX && ball.posX <= brick.posX + brick.larg && brick.status ==1) //ball between brick limits in X
 			{
 				if(ball.posY - ball.radius <= brick.posY + brick.h//ball under brick
-					&& ball.posY - ball.radius > brick.posY + brick.h -15)
+					&& ball.posY - ball.radius > brick.posY + brick.h -5)
 				{
 					gravity =- gravity;
 					brick.status = 0;
-					power(brick);
+					//power(brick);
 					broken.play();
 				}
 
-				else if (ball.posY + ball.radius >= brick.posY //ball over brick
-					&& ball.posY + ball.radius < brick.posY + 15)
+				if (ball.posY + ball.radius >= brick.posY //ball over brick
+					&& ball.posY + ball.radius < brick.posY +5)
 				{
 					gravity =- gravity;
 					brick.status = 0;
-					power(brick);
+					//power(brick);
 					broken.play();
 				}
 			}
@@ -169,20 +175,20 @@ function motion()
 
 			if(ball.posY >= brick.posY && ball.posY <= brick.posY + brick.h && brick.status ==1) 
 			{
-				if(ball.posX + ball.radius >= brick.posX && ball.posX + ball.radius < brick.posX +10) //left brick side
+				if(ball.posX + ball.radius >= brick.posX && ball.posX + ball.radius < brick.posX +5) //left brick side
 				{
 					sens = -sens;
 					brick.status = 0;
-					power(brick);
+					//power(brick);
 					broken.play();
 				}
 
-				else if(ball.posX - ball.radius <= brick.posX + brick.larg 
-					 && ball.posX - ball.radius >  brick.posX + brick.larg-10) //right side OK
+				if(ball.posX - ball.radius <= brick.posX + brick.larg 
+					 && ball.posX - ball.radius >  brick.posX + brick.larg-5) //right side OK
 				{
 					sens = -sens;
 					brick.status = 0;
-					power(brick);
+					//power(brick);
 					broken.play();
 				}
 			}
@@ -211,16 +217,16 @@ function createBricks(tab)
 						"purple","fuchsia","thistle","plum",
 						"black"
 						]; 
-	const bricks = new Shape(10,10,60  ,20,0,"orange"); //(posX,posY,larg,h,radius,color)
+	const bricks = new Shape(20,100,150 ,20,0,"orange"); //(posX,posY,larg,h,radius,color)
 
-	for(let line =0; line<7; line++) //number of lines
+	for(let line =0; line<1; line++) //number of lines
 	{
 		tab[line] = []; //create array of array
 
-		for (let col=0; col<11; col++) //number of columns
+		for (let col=0; col<3; col++) //number of columns
 		{	
 			tab[line][col]        = Object.create(bricks); //each array is a brick objet
-			tab[line][col].posX   = bricks.posX + (2+bricks.larg)*col;
+			tab[line][col].posX   = bricks.posX + (50+bricks.larg)*col;
 			tab[line][col].posY   = bricks.posY + (2+bricks.h)*line;
 			tab[line][col].color  = tabColours[Math.round(Math.random()*tabColours.length)];
 			tab[line][col].status = 1; // add new property 
@@ -355,6 +361,30 @@ function drawGameOver()
 	document.onkeypress = (e) => {if(e.key == " ") document.location.reload();};
 }
 
+/***************Sound Control****************************************/
+speaker.onclick = () =>{
+	if(soundActive)
+	{
+		soundActive = false;
+		speaker.textContent = "🔈";
+		speaker.style.marginRight = "7px";
+
+		for (let audio of tabAudio)
+			audio.muted = true;
+
+	}
+
+	else
+	{
+		soundActive = true;
+		speaker.textContent = "🔊";
+		speaker.style.marginRight = "";
+
+		for (let audio of tabAudio)
+			audio.muted = false;
+
+	}
+}
 
 
 	
@@ -364,7 +394,7 @@ document.onkeypress = (e) =>
 {
 	if(e.key == " " && beginGame == 0)
 	{
-		sens = 4;
+		sens = 0;
 		gravity = -4;
 		tetris.play();
 		tetris.loop = true;
