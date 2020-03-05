@@ -63,7 +63,6 @@ paddle.posY  =  canvasH - paddle.h;
 let paddleSpeed = 10; paddle.control();
 
 const ball   = new Shape(paddle.posX+paddle.larg/2,paddle.posY-5,0,0,5,"red");
-const bricks = new Shape(10,10,75,20,0,"orange"); //(posX,posY,larg,h,radius,color)
 
 let gravity, sens, tabBricks=[], count;
 
@@ -149,7 +148,7 @@ function motion()
 			if(ball.posX >= brick.posX && ball.posX <= brick.posX + brick.larg && brick.status ==1) //ball between brick limits in X
 			{
 				if(ball.posY - ball.radius <= brick.posY + brick.h//ball under brick
-					&& ball.posY - ball.radius > brick.posY + brick.h -10)
+					&& ball.posY - ball.radius > brick.posY + brick.h -15)
 				{
 					gravity =- gravity;
 					brick.status = 0;
@@ -158,7 +157,7 @@ function motion()
 				}
 
 				else if (ball.posY + ball.radius >= brick.posY //ball over brick
-					&& ball.posY + ball.radius < brick.posY + 10)
+					&& ball.posY + ball.radius < brick.posY + 15)
 				{
 					gravity =- gravity;
 					brick.status = 0;
@@ -203,21 +202,22 @@ function motion()
 
 function createBricks(tab)
 {
-	const tabColours = ["darkcyan","aqua","lightcyan","powderblue",
+	const tabColours = ["darkcyan","aqua","lightcyan","powderblue","midnightblue",
 						"olivedrab","limegreen","darkseagreen",
 						"orangered","firebrick",
 						"hotpink","lightsalmon","mistyrose",
-						"gold",
-						"slategray","white","grey","dimgray",
-						"purple","fuchsia",
+						"gold", "beige",
+						"slategray","white","grey",
+						"purple","fuchsia","thistle","plum",
 						"black"
 						]; 
+	const bricks = new Shape(10,10,60  ,20,0,"orange"); //(posX,posY,larg,h,radius,color)
 
-	for(let line =0; line<5; line++)
+	for(let line =0; line<7; line++) //number of lines
 	{
 		tab[line] = []; //create array of array
 
-		for (let col=0; col<8; col++)
+		for (let col=0; col<11; col++) //number of columns
 		{	
 			tab[line][col]        = Object.create(bricks); //each array is a brick objet
 			tab[line][col].posX   = bricks.posX + (2+bricks.larg)*col;
@@ -234,35 +234,65 @@ function createBricks(tab)
 function power(item)
 {
 	if(item.color == "orangered")
-		{
-			sens = (sens>=0)?  8 : -8;
-			tetris.playbackRate = 1.5;
-		}
+	{
+		sens = (sens>=0)?  8 : -8; //ball faster
+		tetris.playbackRate = 1.5;
+		paddle.color = "orangered"
+		info.textContent = "Faster!!!";
+	}
 
 	else if(item.color == "hotpink")
 	{	
-		sens = (sens>=0)?  2 : -2;
+		sens = (sens>=0)?  2 : -2; //ball slower
 		gravity = (gravity>=0)?  -2 : +2;
 		tetris.playbackRate = 0.8;
+		paddle.color = "hotpink";
+		info.textContent = "Slower!!!";
 	}
 	
-	else if(item.color == "limegreen")
+	else if(item.color == "limegreen")//random sens
+	{
 		sens = 0;
+		gravity = 1;
+		setTimeout( ()=>{sens= Math.random()*7+1;gravity=2;},1000);
+		paddle.color = "limegreen";
+		info.textContent= "Hey ball! what are you doing?";
+	}
 
 	else if(item.color == "gold")
-		paddle.larg+=30;
+	{
+		paddle.larg+=30; //paddle bigger
+		paddle.color = "gold";
+		info.textContent = "Yeah, paddle is bigger!";
+	}
 	
-	else if(item.color == "fuchsia")
+	else if(item.color == "fuchsia") //paddle smaller
+	{
 		paddle.larg-=20;
+		paddle.color = "fuchsia";
+		info.textContent = "What!!!, paddle is smaller!";
+	}
 
-	else if(item.color == "white")
+	else if(item.color == "white") //paddle speed lower
+	{
 		paddleSpeed = 6;
+		paddle.color = "white";
+		info.textContent = "Nooo! Paddle is slower!";
+	}
 	
-	else if(item.color == "aqua")
-		paddleSpeed = 20;
+	else if(item.color == "aqua") //paddle speed faster
+	{
+		paddleSpeed = 15;
+		paddle.color = "aqua";
+		info.textContent = "Paddle is faster!";
+	}
 
-	else if(item.color == "black")
+	else if(item.color == "black") //ball bigger
+	{
 		ball.radius = 20;
+		paddle.color = "black";
+		info.textContent = "What's that? a big ball?!";
+	}
 
 	else
 	{
@@ -270,8 +300,10 @@ function power(item)
 		paddleSpeed = 10;
 		tetris.playbackRate = 1;
 		ball.radius = 5;
+		info.textContent= "";
+		if(paddle.color != "gold" && paddle.color != "fuschia")
+			paddle.color = "blue";
 	}
-
 }
 
 /***********************************Functions Victory/Game Over***************/
@@ -293,9 +325,9 @@ function drawVictory()
 	tetris.pause();
 	victory.play();
 	stopAnimation = true;	
-	info.textContent = "Press Enter to play again";
+	info.textContent = "Press Space Bar to play again";
 
-	document.onkeypress = (e) => {if(e.key == "Enter") document.location.reload();};
+	document.onkeypress = (e) => {if(e.key == " ") document.location.reload();};
 	
 }
 
@@ -318,9 +350,9 @@ function drawGameOver()
 	gameover.play();
 	stopAnimation = true;
 
-	info.textContent = "Press Enter to play again";
+	info.textContent = "Press Space Bar to play again";
 
-	document.onkeypress = (e) => {if(e.key == "Enter") document.location.reload();};
+	document.onkeypress = (e) => {if(e.key == " ") document.location.reload();};
 }
 
 
