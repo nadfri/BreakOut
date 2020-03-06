@@ -31,8 +31,12 @@ body{
     }
 
 #speaker{
-  float: right;
+  float: left;
   cursor: pointer;
+}
+
+#heart{
+    float: right;
 }
 
 
