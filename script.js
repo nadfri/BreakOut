@@ -13,17 +13,19 @@ const victory  = new Audio("sounds/victory.mp3");
 
 const tabAudio = [tetris,gameover,broken,victory];
 
-let soundActive = true;
+let soundActive;
+
+
 
 
 /************************Class Shape*******************************/
 class Shape
 {
-	constructor (posX,posY,larg,h,radius,color)
+	constructor (posX,posY,l,h,radius,color)
 	{
 		this.posX = posX;		
 		this.posY = posY;
-		this.larg = larg;
+		this.l = l;
 		this.h = h;
 		this.radius = radius;
 		this.color = color;
@@ -40,7 +42,7 @@ class Shape
 	drawRect()
 	{
 		ctx.beginPath();
-    	ctx.rect(this.posX,this.posY,this.larg,this.h);
+    	ctx.rect(this.posX,this.posY,this.l,this.h);
     	ctx.fillStyle = this.color;
 		ctx.fill();
 		ctx.strokeStyle = "black";
@@ -62,12 +64,13 @@ class Shape
 }
 
 
-const paddle = new Shape(0,0,200,20,0,"blue");
-paddle.posX  = (canvasW - paddle.larg)/2;
+const paddle = new Shape(0,0,120,20,0,"blue");
+paddle.posX  = (canvasW - paddle.l)/2;
 paddle.posY  =  canvasH - paddle.h;
-let paddleSpeed = 5; paddle.control();
+let paddleSpeed =10; paddle.control();
 
-const ball   = new Shape(paddle.posX+paddle.larg/2,paddle.posY-5,0,0,20,"red");
+let sizeBall = 10;
+const ball   = new Shape(20,20,0,0,sizeBall,"red"); //x,y,**,**,radius,color
 
 let gravity, sens, tabBricks=[], count;
 
@@ -77,8 +80,19 @@ let stopAnimation = false;
 let beginGame     = false; //to avoid space bar function
 
 
-
-
+/*******************Launch Game *************************************/
+document.onkeypress = (e) =>
+{
+	if(e.key == " " && beginGame == 0) //launch by press bar space
+	{
+		sens = 4;
+		gravity = -4;
+		tetris.play();
+		tetris.loop = true;
+		info.textContent ="";
+		beginGame = true;
+	}
+};
 
 
 function motion()
@@ -88,10 +102,10 @@ function motion()
 	ball.drawCircle();
 	paddle.drawRect();
 
-	if(beginGame == false)
+	if(beginGame == false) // init before to play
 	{
-		ball.posX = paddle.posX+paddle.larg/2
-		ball.posY = paddle.posY-5; 
+		ball.posX = paddle.posX+paddle.l/2
+		ball.posY = paddle.posY-ball.radius;
 		gravity = 0;
 		sens    = 0;
 		count   = 0;
@@ -108,7 +122,9 @@ function motion()
 	
 	if (count == 0) drawVictory();
 
-
+	/********************************Motion Paddle***************************************/
+	if(right && paddle.posX < canvasW-paddle.l) paddle.posX+= paddleSpeed;
+    if(left  && paddle.posX > 0)                paddle.posX-= paddleSpeed;
   
 	/********************************Wall Collision************************************/
 	if(ball.posY - ball.radius <= 0) //roof
@@ -131,14 +147,12 @@ function motion()
 
 	if (ball.posY + ball.radius >= canvasH) //ground
 		drawGameOver();
-	
-	/********************************Motion Paddle***************************************/
-	if(right && paddle.posX < canvasW-paddle.larg) paddle.posX+= paddleSpeed;
-    if(left  && paddle.posX > 0)                   paddle.posX-= paddleSpeed;
 
-	/********************************Paddle Collision*************************************/
-	if(ball.posX >= paddle.posX && ball.posX <= paddle.posX + paddle.larg) //ball between paddle limits in X
-		if(ball.posY + ball.radius >= paddle.posY && ball.posY <= canvasH) //ball between paddle limitis in Y
+	/********************************Paddle Collision******************************************/
+	if(ball.posX >= paddle.posX 
+	&& ball.posX <= paddle.posX + paddle.l) //ball between paddle limits in X
+		if(ball.posY + ball.radius >= paddle.posY 
+		&& ball.posY < canvasH) //ball between paddle limitis in Y
 		{
 			gravity = -gravity;
 			ball.posY = paddle.posY - ball.radius -1 //out ball from paddle
@@ -146,52 +160,125 @@ function motion()
 			if     (right) sens = +Math.abs(sens); 	
 			else if(left)  sens = -Math.abs(sens); 
 		}
+	//******************************Paddle Coin Collision*************************************/
+	if(paddle.posY >= ball.posY 
+    && paddle.posY <= ball.posY + ball.radius) //ball in Top Coin	
 
-    /*********************************Brick Collision***********************************/
+		if(paddle.posX  >= ball.posX
+    	&& paddle.posX  <= ball.posX + ball.radius) //Left coin
+    	{
+	   		gravity = -Math.abs(gravity);
+	   		sens    = (sens>0)? -sens : sens;
+    	}
+   
+	else if(paddle.posX + paddle.l >= ball.posX - ball.radius
+		 && paddle.posX + paddle.l <= ball.posX) //Right coin
+   		{
+	   	gravity = -Math.abs(gravity);
+	   	sens = (sens<0)? -sens : sens;
+   		}
+
+    /*********************************Brick Collision*******************************************/
 	for (let line of tabBricks)
 		for (let brick of line)
-		{
-			if(ball.posX >= brick.posX && ball.posX <= brick.posX + brick.larg && brick.status ==1) //ball between brick limits in X
+		{	let marge = ball.radius;
+	//********************************Brick Horizontal Side*************************************/
+			if(ball.posX > brick.posX 
+			&& ball.posX < brick.posX + brick.l 
+			&& brick.status == 1) //ball between brick
 			{
-				if(ball.posY - ball.radius <= brick.posY + brick.h//ball under brick
-					&& ball.posY - ball.radius > brick.posY + brick.h -5)
+				if(ball.posY - ball.radius <= brick.posY + brick.h 
+				&& ball.posY - ball.radius >= brick.posY + brick.h - marge) //bottom side
 				{
 					gravity =- gravity;
 					brick.status = 0;
-					//power(brick);
-					broken.play();
+					power(brick);
+					broken.play(); 	
 				}
 
-				if (ball.posY + ball.radius >= brick.posY //ball over brick
-					&& ball.posY + ball.radius < brick.posY +5)
+
+				if(ball.posY + ball.radius >= brick.posY
+				&& ball.posY + ball.radius <= brick.posY + marge) //top side
 				{
 					gravity =- gravity;
 					brick.status = 0;
-					//power(brick);
-					broken.play();
+					power(brick);
+					broken.play();	
 				}
 			}
+			//****************Brick Coin Bottom******************************************/
+			if(brick.posY + brick.h >= ball.posY - ball.radius
+			&& brick.posY + brick.h <= ball.posY && brick.status == 1) 
 
+				if(brick.posX >= ball.posX
+				&& brick.posX <= ball.posX + ball.radius) //left Bottom
+				{
+					gravity = Math.abs(gravity);
+					sens = (sens>0)? -sens : sens;
+					brick.status = 0;
+					power(brick);
+					broken.play();
+				}
+			
+			//****************Brick Coin Right Bottom*************************************/
+			else if(brick.posX + brick.l >= ball.posX - ball.radius
+				 && brick.posX + brick.l <= ball.posX) //Right Bottom
+				{
+					gravity = Math.abs(gravity);
+					sens    = (sens<0)? -sens : sens;
+					brick.status = 0;
+					power(brick);
+					broken.play();
+				}
+				
+			//******************Brick Coin Top*********************************************/
+			if(brick.posY >= ball.posY 
+			&& brick.posY <= ball.posY + ball.radius && brick.status == 1) //ball in Top Coin
+			
 
-			if(ball.posY >= brick.posY && ball.posY <= brick.posY + brick.h && brick.status ==1) 
+			 	if(brick.posX  >= ball.posX
+				&& brick.posX  <= ball.posX + ball.radius) //Left Top
+				{
+					gravity = -Math.abs(gravity);
+					sens    = (sens>0)? -sens : sens;
+					brick.status = 0;
+					power(brick);
+					broken.play();
+				}
+				
+			else if(brick.posX + brick.l >= ball.posX - ball.radius
+				 && brick.posX + brick.l <= ball.posX) //Right Top
+				{
+					gravity = -Math.abs(gravity);
+					sens = (sens<0)? -sens : sens;
+					brick.status = 0;
+					power(brick);
+					broken.play();//brick.status = 0; 
+				} 
+
+			//***************Brick Vertical Side*******************************************/
+			if(ball.posY > brick.posY 
+			&& ball.posY < brick.posY + brick.h && brick.status ==1) //ball between brick.h
 			{
-				if(ball.posX + ball.radius >= brick.posX && ball.posX + ball.radius < brick.posX +5) //left brick side
+				if(ball.posX + ball.radius >= brick.posX 
+				&& ball.posX + ball.radius < brick.posX +marge) //left brick side
 				{
 					sens = -sens;
 					brick.status = 0;
-					//power(brick);
+					power(brick);
 					broken.play();
 				}
 
-				if(ball.posX - ball.radius <= brick.posX + brick.larg 
-					 && ball.posX - ball.radius >  brick.posX + brick.larg-5) //right side OK
+				else if(ball.posX - ball.radius <= brick.posX + brick.l 
+					 && ball.posX - ball.radius >  brick.posX + brick.l-marge) //right side OK
 				{
 					sens = -sens;
 					brick.status = 0;
-					//power(brick);
+					power(brick);
 					broken.play();
 				}
 			}
+			
 		}
 
 	/*************Final Action************************/
@@ -217,17 +304,17 @@ function createBricks(tab)
 						"purple","fuchsia","thistle","plum",
 						"black"
 						]; 
-	const bricks = new Shape(20,100,150 ,20,0,"orange"); //(posX,posY,larg,h,radius,color)
+	const bricks = new Shape(20,10,60,30,0,"orange"); //(posX,posY,l,h,radius,color)
 
-	for(let line =0; line<1; line++) //number of lines
+	for(let line =0; line<6; line++) //number of lines
 	{
 		tab[line] = []; //create array of array
 
-		for (let col=0; col<3; col++) //number of columns
+		for (let col=0; col<10; col++) //number of columns
 		{	
 			tab[line][col]        = Object.create(bricks); //each array is a brick objet
-			tab[line][col].posX   = bricks.posX + (50+bricks.larg)*col;
-			tab[line][col].posY   = bricks.posY + (2+bricks.h)*line;
+			tab[line][col].posX   = bricks.posX + (bricks.l+5)*col;
+			tab[line][col].posY   = bricks.posY + (bricks.h+5)*line;
 			tab[line][col].color  = tabColours[Math.round(Math.random()*tabColours.length)];
 			tab[line][col].status = 1; // add new property 
 			
@@ -267,14 +354,14 @@ function power(item)
 
 	else if(item.color == "gold")
 	{
-		paddle.larg+=30; //paddle bigger
+		paddle.l+=30; //paddle bigger
 		paddle.color = "gold";
 		info.textContent = "Yeah, paddle is bigger!";
 	}
 	
 	else if(item.color == "fuchsia") //paddle smaller
 	{
-		paddle.larg-=20;
+		paddle.l-=20;
 		paddle.color = "fuchsia";
 		info.textContent = "What!!!, paddle is smaller!";
 	}
@@ -305,7 +392,7 @@ function power(item)
 		gravity = (gravity>=0)?  4 : -4;
 		paddleSpeed = 10;
 		tetris.playbackRate = 1;
-		ball.radius = 5;
+		ball.radius = sizeBall;
 		info.textContent= "";
 		if(paddle.color != "gold" && paddle.color != "fuschia")
 			paddle.color = "blue";
@@ -362,7 +449,10 @@ function drawGameOver()
 }
 
 /***************Sound Control****************************************/
-speaker.onclick = () =>{
+speaker.onclick = () =>{mute();}
+
+function mute()
+{
 	if(soundActive)
 	{
 		soundActive = false;
@@ -371,7 +461,6 @@ speaker.onclick = () =>{
 
 		for (let audio of tabAudio)
 			audio.muted = true;
-
 	}
 
 	else
@@ -382,27 +471,40 @@ speaker.onclick = () =>{
 
 		for (let audio of tabAudio)
 			audio.muted = false;
-
 	}
-}
 
+	const saveData = {audioStatus : soundActive};
+	localStorage.setItem("saveData", JSON.stringify(saveData));
+}
 
 	
 
-/*******************Launch Game *************************************/
-document.onkeypress = (e) =>
-{
-	if(e.key == " " && beginGame == 0)
+
+
+
+
+/*********************WebStorage************************************ */
+
+if(localStorage.getItem('saveData'))
 	{
-		sens = 0;
-		gravity = -4;
-		tetris.play();
-		tetris.loop = true;
-		info.textContent ="";
-		beginGame = true;
+		const saveData = JSON.parse(localStorage.getItem('saveData'));
+		soundActive = saveData.audioStatus;
+
+		if(soundActive == false)
+		{
+			soundActive = true;
+			mute();
+		}
+		
 	}
 
-};
+	
+
+
+
+
+
+
 
 
 /*********************Mouse Position********************************/
