@@ -6,15 +6,16 @@ const canvasW = myCanvas.width  = 700;
 const ctx     = myCanvas.getContext("2d");
 
 /******************************Audios******************************/
-const tetris    = new Audio("sounds/tetris.mp3");
-const gameover  = new Audio("sounds/gameover.mp3");
-const broken    = new Audio("sounds/broken.wav");
-const victory   = new Audio("sounds/victory.mp3");
-const lost      = new Audio("sounds/lost.mp3");
-const extraLife = new Audio("sounds/extraLife.mp3");
+const tetris    = new Audio("../sounds/tetris.mp3");
+const gameover  = new Audio("../sounds/gameover.mp3");
+const broken    = new Audio("../sounds/broken.wav");
+const victory   = new Audio("../sounds/victory.mp3");
+const lost      = new Audio("../sounds/lost.mp3");
+const extraLife = new Audio("../sounds/extraLife.mp3");
 
 const tabAudio = [tetris,gameover,broken,victory,lost,extraLife];
 let soundActive;
+
 
 /************************Class Shape*******************************/
 class Shape
@@ -92,6 +93,8 @@ document.onkeypress = (e) =>
 		beginGame = true;
 	}
 };
+
+drawVictory();
 
 function init()
 {
@@ -469,9 +472,9 @@ function drawVictory()
 	tetris.pause();
 	victory.play();
 	stopAnimation = true;	
-	info.textContent = "Press Space Bar to play again";
+	info.textContent = "Press Space Bar to unlock the Next Level";
 
-	document.onkeypress = (e) => {if(e.key == " ") document.location.reload();};
+	document.onkeypress = (e) => {if(e.key == " ") document.location = "../menu.html";};
 	
 }
 

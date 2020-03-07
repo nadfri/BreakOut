@@ -1,0 +1,65 @@
+@import url('https://fonts.googleapis.com/css?family=Trade+Winds&display=swap');
+
+body{
+    background-color: gray;
+}
+#content{
+    width: 700px;
+    height: 500px;
+    border: ridge 10px;
+    border-color: indianred;
+
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    grid-column-gap: 10px;
+    grid-row-gap: 10px;
+    background: url(img/murSol.jpg);
+    background-size: contain;
+}
+
+.box{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Trade Winds', cursive;
+    font-size: 30px;
+    color: black;
+    cursor: pointer;
+
+    border: 4px outset #A8ACBC;
+    border-radius: 6px;
+}
+
+.box:active{
+    border: 4px inset #A8ACBC;
+}
+
+
+.locked{
+
+    background: 
+    linear-gradient(45deg,  rgba(246,230,180,.1) 0%,rgba(237,144,23,.5) 100%),
+    url("img/cadenas.png");
+    background-repeat: no-repeat;
+    background-position: center center;
+    cursor: not-allowed;
+}
+
+.locked:hover{
+    background: 
+    linear-gradient(45deg,  rgba(246,230,180,.1) 0%,rgba(237,144,23,1) 100%),
+    url("img/cadenas.png");
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+
+.unlocked{
+    background: rgba(107,186,112,0.5);
+}
+
+.unlocked:hover{
+    background: rgba(107,186,112,0.8);
+}
+
