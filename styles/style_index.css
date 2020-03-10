@@ -4,6 +4,7 @@ body{
     background-color: gray;
 }
 #content{
+    margin: auto;
     width: 700px;
     height: 500px;
     border: ridge 10px;
@@ -14,8 +15,8 @@ body{
     grid-template-rows: repeat(4, 1fr);
     grid-column-gap: 10px;
     grid-row-gap: 10px;
-    background: url(img/murSol.jpg);
-    background-size: contain;
+    background: url(../img/menu.jpg);
+    background-size: cover;
 }
 
 .box{
@@ -40,7 +41,7 @@ body{
 
     background: 
     linear-gradient(45deg,  rgba(246,230,180,.1) 0%,rgba(237,144,23,.5) 100%),
-    url("img/cadenas.png");
+    url("../img/cadenas.png");
     background-repeat: no-repeat;
     background-position: center center;
     cursor: not-allowed;
@@ -49,7 +50,7 @@ body{
 .locked:hover{
     background: 
     linear-gradient(45deg,  rgba(246,230,180,.1) 0%,rgba(237,144,23,1) 100%),
-    url("img/cadenas.png");
+    url("../img/cadenas.png");
     background-repeat: no-repeat;
     background-position: center center;
 }

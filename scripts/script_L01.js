@@ -4,18 +4,19 @@ window.onload = () =>{
 const canvasH = myCanvas.height = 500;
 const canvasW = myCanvas.width  = 700;
 const ctx     = myCanvas.getContext("2d");
+myCanvas.style.backgroundImage = "url('img/L01.jpg')";
+level.textContent = "Level 1";
 
 /******************************Audios******************************/
-const tetris    = new Audio("../sounds/tetris.mp3");
-const gameover  = new Audio("../sounds/gameover.mp3");
-const broken    = new Audio("../sounds/broken.wav");
-const victory   = new Audio("../sounds/victory.mp3");
-const lost      = new Audio("../sounds/lost.mp3");
-const extraLife = new Audio("../sounds/extraLife.mp3");
+const tetris    = new Audio("sounds/tetris.mp3");
+const gameover  = new Audio("sounds/gameover.mp3");
+const broken    = new Audio("sounds/broken.wav");
+const victory   = new Audio("sounds/victory.mp3");
+const lost      = new Audio("sounds/lost.mp3");
+const extraLife = new Audio("sounds/extraLife.mp3");
 
 const tabAudio = [tetris,gameover,broken,victory,lost,extraLife];
 let soundActive;
-
 
 /************************Class Shape*******************************/
 class Shape
@@ -66,13 +67,16 @@ class Shape
 const paddle = new Shape(0,0,120,20,0,"blue");
 paddle.posX  = (canvasW - paddle.l)/2;
 paddle.posY  =  canvasH - paddle.h;
-let paddleSpeed = 10; paddle.control();
+let paddleSpeed = 8; paddle.control();
 
 let sizeBall = 7;
 const ball   = new Shape(0,0,0,0,sizeBall,"red"); //x,y,**,**,radius,color
 
-let gravity, sens, tabBricks=[], count;
+let gravity, sens, tabBricks=[];
 let life = 3;
+
+const nLine = 4; // number of lines
+const nCol  = 8; // number of columns
 
 let right         = false;
 let left          = false;
@@ -94,7 +98,6 @@ document.onkeypress = (e) =>
 	}
 };
 
-drawVictory();
 
 function init()
 {
@@ -119,7 +122,7 @@ function motion()
 	ctx.clearRect(0, 0, canvasW, canvasH); //clear canvas
 	ball.drawCircle();
 	paddle.drawRect();
-	count   = 0;
+	let count = nLine*nCol; //number of bricks
 
 	if(beginGame == false) // init before to play
 	{
@@ -128,14 +131,18 @@ function motion()
 	
 	for(let line of tabBricks)
 		for (let brick of line)
-			if (brick.status == 1)
-			{
+			if (brick.status == 1 && count > 1)
 				brick.drawRect();
-				count++;
+
+		else if(brick.status && count == 1 ) //last brick bigger
+			{
+				brick.l = 120;
+				brick.drawRect();  
 			}
+		else count--;
 	
 	if (count == 0) drawVictory();
-	if (life == 0)  drawGameOver();
+	if (life  == 0) drawGameOver();
 
 	/********************************Motion Paddle***************************************/
 	if(right && paddle.posX < canvasW-paddle.l) paddle.posX+= paddleSpeed;
@@ -315,41 +322,49 @@ function motion()
 /************************Creation of Bricks**************************************/
 function createBricks(tab)
 {
-	const tabColours = ["darkcyan","aqua","lightcyan","powderblue","midnightblue",
-						"olivedrab","limegreen","darkseagreen",
-						"orangered","firebrick",
-						"hotpink","lightsalmon","mistyrose",
-						"gold", "beige",
-						"slategray","white","grey",
-						"purple","fuchsia","thistle","plum",
-						"black"
-						]; 
-	const bricks = new Shape(50,50,70,20,0,"orange"); //(posX,posY,l,h,radius,color)
 
-	for(let line =0; line<6; line++) //number of lines
+	const tabColours = ["midnightBlue","royalBlue","powderBlue",
+						"deepPink","hotpink",
+						"burlyWood", "snow",
+						"chartreuse", "darkgreen","olive",
+						"firebrick","orangeRed",
+						"yellow", "dimGray",
+						"purple"
+
+						]; 
+	const bricks = new Shape(50,75,70,20,0,"orange"); //(posX,posY,l,h,radius,color)
+
+	for(let line =0; line<nLine; line++) //number of lines
 	{
 		tab[line] = []; //create array of array
 
-		for (let col=0; col<8; col++) //number of columns
+		for (let col=0; col<nCol; col++) //number of columns
 		{	
 			tab[line][col]        = Object.create(bricks); //each array is a brick objet
 			tab[line][col].posX   = bricks.posX + (bricks.l+5)*col;
 			tab[line][col].posY   = bricks.posY + (bricks.h+5)*line;
-			tab[line][col].color  = tabColours[Math.round(Math.random()*tabColours.length)];
+			//tab[line][col].color  = tabColours[Math.round(Math.random()*tabColours.length)];
 			tab[line][col].status = 1; // add new property 
 		}
 	}
+
+//***********Special Bricks******************************************* */
+	tab[1][6].color = "hotpink";
+	tab[2][4].color = "yellow";  
+	tab[3][0].color = "dimGray";
+
+
 
 }; createBricks(tabBricks);
 
 /************************************Function Bricks Powers***********************/
 function power(item)
 {
-	if(item.color == "orangered")
+	if(item.color == "fireBrick")
 	{
 		sens = (sens>=0)?  8 : -8; //ball faster
 		tetris.playbackRate = 1.5;
-		paddle.color = "orangered"
+		paddle.color = "fireBrick"
 		info.textContent = "Faster!!!";
 		setTimeout( ()=>{
 			sens = (sens>=0)? 3 : -3;
@@ -359,12 +374,12 @@ function power(item)
 		},5000);
 	}
 
-	else if(item.color == "hotpink")
+	else if(item.color == "snow")
 	{	
 		sens = (sens>=0)?  2 : -2; //ball slower
 		gravity = (gravity>=0)?  2 : -2;
 		tetris.playbackRate = 0.8;
-		paddle.color = "hotpink";
+		paddle.color = "snow";
 		info.textContent = "Slower!!!";
 		setTimeout( ()=>{
 			sens = (sens>=0)? 3 : -3;
@@ -375,37 +390,40 @@ function power(item)
 		},5000);
 	}
 	
-	else if(item.color == "limegreen")//random sens
+	else if(item.color == "chartreuse")//random sens
 	{
 		sens = 0;
 		gravity = 1;
+		paddle.color = "chartreuse";
+		ball.color = "paleGreen";
+		info.textContent= "Hey ball! what are you doing?";
 		setTimeout( ()=>{
 			sens = Math.random()*7+1;
 			gravity = 5;
+			ball.color = "red";
+			paddle.color = "blue";
 			info.textContent= "";
 		},1000);
-		paddle.color = "limegreen";
-		info.textContent= "Hey ball! what are you doing?";
 	}
 
-	else if(item.color == "gold")
+	else if(item.color == "yellow")
 	{
 		paddle.l+=30; //paddle bigger
-		paddle.color = "gold";
+		paddle.color = "yellow";
 		info.textContent = "Yeah, paddle is bigger!";
 	}
 	
-	else if(item.color == "fuchsia") //paddle smaller
+	else if(item.color == "dimGray") //paddle smaller
 	{
 		paddle.l-=20;
-		paddle.color = "fuchsia";
+		paddle.color = "dimGray";
 		info.textContent = "What!!!, paddle is smaller!";
 	}
 
-	else if(item.color == "white") //paddle speed lower
+	else if(item.color == "deepPink") //paddle speed lower
 	{
 		paddleSpeed = 6;
-		paddle.color = "white";
+		paddle.color = "deepPink";
 		info.textContent = "Nooo! Paddle is slower!";
 		setTimeout( ()=>{
 			paddleSpeed = 10;
@@ -414,10 +432,10 @@ function power(item)
 		},5000);
 	}
 	
-	else if(item.color == "aqua") //paddle speed faster
+	else if(item.color == "orangeRed") //paddle speed faster
 	{
 		paddleSpeed = 15;
-		paddle.color = "aqua";
+		paddle.color = "orangeRed";
 		info.textContent = "Paddle is faster!";
 		setTimeout( ()=>{
 			paddleSpeed = 10;
@@ -427,11 +445,11 @@ function power(item)
 		
 	}
 
-	else if(item.color == "black") //ball bigger
+	else if(item.color == "olive") //ball bigger
 	{
 		ball.radius = 20; 
-		ball.color = "yellow";
-		paddle.color = "black";
+		ball.color = "gold";
+		paddle.color = "olive";
 		info.textContent = "What's that? a big ball?!";
 		setTimeout(()=>{
 			ball.radius = sizeBall; 
@@ -440,7 +458,7 @@ function power(item)
 
 	}
 
-	else if(item.color == "lightsalmon") //Extra Life
+	else if(item.color == "hotpink") //Extra Life
 	{
 		life++;
 		heartUpadte();
@@ -454,30 +472,6 @@ function power(item)
 }
 
 /***********************************Functions Victory/Game Over***************/
-function drawVictory()
-{
-	ctx.beginPath();
-	ctx.rect(0,canvasH/2-40,canvasW,100);
-	ctx.fillStyle = "white";
-	ctx.fill();
-	ctx.strokeStyle = "red";
-	ctx.stroke();
-	
-	ctx.fillStyle = "blue";
-	ctx.font = "70px orbitron";
-	ctx.fillText("VICTORY!",150,canvasH/2+30);
-	ctx.strokeStyle = "red";
-	ctx.strokeText("VICTORY!",150,canvasH/2+30);
-		
-	tetris.pause();
-	victory.play();
-	stopAnimation = true;	
-	info.textContent = "Press Space Bar to unlock the Next Level";
-
-	document.onkeypress = (e) => {if(e.key == " ") document.location = "../menu.html";};
-	
-}
-
 function drawGameOver()
 {
 	ctx.beginPath();
@@ -500,6 +494,36 @@ function drawGameOver()
 	info.textContent = "Press Space Bar to play again";
 
 	document.onkeypress = (e) => {if(e.key == " ") document.location.reload();};
+}
+
+
+function drawVictory()
+{
+	ctx.beginPath();
+	ctx.rect(0,canvasH/2-40,canvasW,100);
+	ctx.fillStyle = "white";
+	ctx.fill();
+	ctx.strokeStyle = "red";
+	ctx.stroke();
+	
+	ctx.fillStyle = "blue";
+	ctx.font = "70px orbitron";
+	ctx.fillText("VICTORY!",150,canvasH/2+30);
+	ctx.strokeStyle = "red";
+	ctx.strokeText("VICTORY!",150,canvasH/2+30);
+		
+	tetris.pause();
+	victory.play();
+	stopAnimation = true;	
+	setInterval( ()=>{info.textContent = "Press Space Bar to unlock the Next Level";}
+					 ,1000);
+					  
+
+	document.onkeypress = (e) => {if(e.key == " ") document.location = "./index.html";};
+
+	localStorage.setItem("level_02", true); //to unlock level_02
+	
+
 }
 
 /***************Sound Control****************************************/
@@ -525,34 +549,30 @@ function mute()
 			audio.muted = false;
 	}
 
-	const saveData = {audioStatus : soundActive};
-	localStorage.setItem("saveData", JSON.stringify(saveData));
+	const saveMute = {audioStatus : soundActive};
+	localStorage.setItem("saveMute", JSON.stringify(saveMute));
+
 }
 
 /*********************WebStorage************************************ */
 
-if(localStorage.getItem('saveData'))
+if(localStorage.getItem('saveMute'))
 	{
-		const saveData = JSON.parse(localStorage.getItem('saveData'));
-		soundActive = saveData.audioStatus;
+		const saveMute = JSON.parse(localStorage.getItem('saveMute'));
+		soundActive = saveMute.audioStatus;
 
 		if(soundActive == false)
 		{
 			soundActive = true;
 			mute();
 		}
+
+		else {
+			soundActive = false;
+			mute();
+		}
 		
 	}
-
-
-/*********************Mouse Position********************************/
-myCanvas.addEventListener("mousemove", function(event) {
-	let decalage = myCanvas.getBoundingClientRect(); //donne la position du canvas
-	let border = 10; //border CSS of canvas
-   gps.textContent = `Coordonnées Souris => x:${event.clientX-decalage.left-border} 
-											 / y:${event.clientY-decalage.top-border}`;
-   });
-
 
 /*****************************End of onload**********************/
 };

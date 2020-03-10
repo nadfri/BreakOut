@@ -37,12 +37,18 @@ body{
 
 #heart{
     float: right;
+
+}
+
+#level{
+    float: left;
+    padding-left: 10px;
 }
 
 
 #myCanvas{ 
     margin: auto;
-    background: url(wall_01.jpg);
+   
     background-repeat: no-repeat;
     background-position: center center;
     background-size: cover;
