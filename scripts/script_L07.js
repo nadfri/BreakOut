@@ -1,15 +1,15 @@
-myCanvas.style.backgroundImage = "url('img/L05.jpg')";
-level.textContent = "Level 5";
+myCanvas.style.backgroundImage = "url('img/L07.jpg')";
+level.textContent = "Level 7";
 
-const nLine = 13; // number of lines
+const nLine = 7; // number of lines
 const nCol  = 7; // number of columns
-const bricks = new Shape(25,30,50,20,0,"orange"); //(posX,posY,l,h,radius,color)
+const bricks = new Shape(45,5,80,20,0,"orange"); //(posX,posY,l,h,radius,color)
 music.src    = "sounds/tetris2.mp3";
 
 function unlockNextLevel()
 {
     document.onkeypress = (e) => {if(e.key == " ") document.location = "./index.html";};
-    localStorage.setItem("level_06", true);  
+    localStorage.setItem("level_08", true);  
 }
 
 /************************Creation of Bricks**************************************/
@@ -32,36 +32,47 @@ function createBricks(tab)
         for (let col=0; col<nCol; col++) //number of columns
         {	
             tab[line][col]        = Object.create(bricks); //each array is a brick objet
-            tab[line][col].posX   = bricks.posX + (bricks.l+50)*col;
-            tab[line][col].posY   = bricks.posY + (bricks.h+10)*line;
+            tab[line][col].posX   = bricks.posX + (bricks.l+7)*col;
+            tab[line][col].posY   = bricks.posY + (bricks.h+7)*line;
             //tab[line][col].color  = tabColours[Math.round(Math.random()*tabColours.length)];
             tab[line][col].status = 1; // add new property 
         }
     }
     
 //*************************Special Bricks************************* */
-    for(let i=0; i<nLine;i+=2)
-        for (let j=0; j<nCol; j+=2)
-            tab[i][j].color = "firebrick";
 
-    for(let i=0; i<nCol; i+=3)
-        tab[11][i].color = "firebrick";
+for(let i=2; i<nLine; i++)
+{
+    tab[i][2].status = 0;
+    tab[i][4].status = 0;
+}
 
-    tab[11][1].color = "snow";
-    tab[11][5].color = "snow";
+for(let i=1; i<nLine; i++)
+    tab[i][3].status = 0;
 
-    tab[3][3].color = "hotpink";
-    tab[7][6].color = "hotpink";
 
-    for(let i=1; i<nLine;i+=4)
-        for (let j=1; j<nCol; j+=4)
-         tab[i][j].color = "dimGray";
 
-    tab[5][0].color = "yellow";
-    tab[5][6].color = "yellow";
-    tab[4][3].color = "yellow";
-    tab[6][3].color = "yellow";
+for(let i=0; i<nCol; i++)
+    tab[0][i].color = "chartreuse";
 
+tab[6][0].color = "chartreuse";
+tab[6][6].color = "chartreuse";
+tab[6][3].status = 1;
+tab[6][3].color = "chartreuse";
+
+tab[6][1].status = 0;
+tab[6][5].status = 0;
+
+tab[5][1].color = "firebrick";
+tab[5][5].color = "firebrick";
+
+tab[2][0].color = "snow";
+tab[2][6].color = "snow";
+
+tab[1][2].color = "yellow";
+tab[1][4].color = "dimGray";
+
+tab[4][0].color = "hotpink";
 
 
 

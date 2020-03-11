@@ -384,10 +384,10 @@ window.onload = () =>{
             info.textContent = "What!!!, paddle is smaller!";
         }
     
-        else if(item.color == "deepPink") //paddle speed lower
+        else if(item.color == "burlyWood") //paddle speed lower
         {
             paddleSpeed = 6;
-            paddle.color = "deepPink";
+            paddle.color = "burlyWood";
             info.textContent = "Nooo! Paddle is slower!";
             setTimeout( ()=>{
                 paddleSpeed = 10;
@@ -396,10 +396,10 @@ window.onload = () =>{
             },5000);
         }
         
-        else if(item.color == "orangeRed") //paddle speed faster
+        else if(item.color == "purple") //paddle speed faster
         {
             paddleSpeed = 15;
-            paddle.color = "orangeRed";
+            paddle.color = "purple";
             info.textContent = "Paddle is faster!";
             setTimeout( ()=>{
                 paddleSpeed = 10;
