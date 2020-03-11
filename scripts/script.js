@@ -55,7 +55,7 @@ const canvasH  = myCanvas.height = 500;
 const canvasW  = myCanvas.width  = 700;
 const ctx      = myCanvas.getContext("2d");
 
-
+let music     = new Audio("sounds/tetris.mp3");
 
 
 /*****************************Start of onload***************************/
@@ -63,14 +63,14 @@ window.onload = () =>{
     "use strict";
 
     /******************************Audios******************************/
-    const tetris    = new Audio("sounds/tetris.mp3");
+    
     const gameover  = new Audio("sounds/gameover.mp3");
     const broken    = new Audio("sounds/broken.wav");
     const victory   = new Audio("sounds/victory.mp3");
     const lost      = new Audio("sounds/lost.mp3");
     const extraLife = new Audio("sounds/extraLife.mp3");
     
-    const tabAudio  = [tetris,gameover,broken,victory,lost,extraLife];
+    const tabAudio  = [music,gameover,broken,victory,lost,extraLife];
     let soundActive = true;
 
     
@@ -96,10 +96,10 @@ window.onload = () =>{
         {
             sens    		 = 3;
             gravity 		 = 4;
-            tetris.loop      = true;
+            music.loop      = true;
             beginGame        = true;
             info.textContent = "";
-            tetris.play();
+            music.play();
             beginGame = true;
         }
     };
@@ -132,20 +132,14 @@ window.onload = () =>{
         {
             init();
         }
-        
+
         for(let line of tabBricks)
             for (let brick of line)
-                if (brick.status == 1 && count>1)
+                if (brick.status == 1)
                     brick.drawRect();
 
-                else if (brick.status == 1 && count == 1 ) //last brick bigger
-                    {
-                        brick.l = 120;
-                        brick.drawRect();
-                    }
                 else count--;
 
-         
         
         if (count == 0)  drawVictory();
         if (life  == 0)  drawGameOver();
@@ -333,13 +327,13 @@ window.onload = () =>{
         if(item.color == "firebrick")
         {
             sens = (sens>=0)?  8 : -8; //ball faster
-            tetris.playbackRate = 1.5;
+            music.playbackRate = 1.5;
             paddle.color = "firebrick"
             info.textContent = "Faster!!!";
             setTimeout( ()=>{
                 sens = (sens>=0)? 3 : -3;
                 info.textContent= "";
-                tetris.playbackRate = 1;
+                music.playbackRate = 1;
                 paddle.color = "blue";
             },5000);
         }
@@ -348,7 +342,7 @@ window.onload = () =>{
         {	
             sens = (sens>=0)?  2 : -2; //ball slower
             gravity = (gravity>=0)?  2 : -2;
-            tetris.playbackRate = 0.8;
+            music.playbackRate = 0.8;
             paddle.color = "snow";
             info.textContent = "Slower!!!";
             setTimeout( ()=>{
@@ -356,7 +350,7 @@ window.onload = () =>{
                 gravity = (gravity>=0)?  4 : -4;
                 info.textContent= "";
                 paddle.color ="blue";
-                tetris.playbackRate = 1;
+                music.playbackRate = 1;
             },5000);
         }
         
@@ -428,6 +422,20 @@ window.onload = () =>{
             },5000);
     
         }
+
+        else if(item.color == "royalBlue") //ball smaller
+        {
+            ball.radius = 3; 
+            ball.color = "black";
+            paddle.color = "royalBlue";
+            info.textContent = "What's that? a small ball?!";
+            setTimeout(()=>{
+                ball.radius = sizeBall; 
+                ball.color = "red";
+                paddle.color ="blue";
+            },5000);
+    
+        }
     
         else if(item.color == "hotpink") //Extra Life
         {
@@ -458,7 +466,7 @@ window.onload = () =>{
         ctx.strokeStyle = "red";
         ctx.strokeText("GAME OVER",100,canvasH/2+30);
     
-        tetris.pause();
+        music.pause();
         gameover.play();
         stopAnimation = true;
     
@@ -482,7 +490,7 @@ window.onload = () =>{
         ctx.strokeStyle = "red";
         ctx.strokeText("VICTORY!",150,canvasH/2+30);
             
-        tetris.pause();
+        music.pause();
         victory.play();
         stopAnimation = true;	
         setInterval( ()=>{info.textContent = "Press Space Bar to unlock the Next Level";}
