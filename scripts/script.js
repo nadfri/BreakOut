@@ -372,7 +372,7 @@ window.onload = () =>{
     
         else if(item.color == "yellow")
         {
-            paddle.l+=30; //paddle bigger
+            paddle.l+=20; //paddle bigger
             paddle.color = "yellow";
             info.textContent = "Yeah, paddle is bigger!";
         }
@@ -386,7 +386,7 @@ window.onload = () =>{
     
         else if(item.color == "burlyWood") //paddle speed lower
         {
-            paddleSpeed = 6;
+            paddleSpeed = 5;
             paddle.color = "burlyWood";
             info.textContent = "Nooo! Paddle is slower!";
             setTimeout( ()=>{
@@ -409,30 +409,26 @@ window.onload = () =>{
             
         }
     
-        else if(item.color == "olive") //ball bigger
+        else if(item.color == "darkGreen") //ball bigger
         {
             ball.radius = 20; 
-            ball.color = "gold";
-            paddle.color = "olive";
+            ball.color = "orangered";
             info.textContent = "What's that? a big ball?!";
             setTimeout(()=>{
                 ball.radius = sizeBall; 
                 ball.color = "red";
-                paddle.color ="blue";
             },5000);
     
         }
 
-        else if(item.color == "royalBlue") //ball smaller
+        else if(item.color == "black") //ball smaller
         {
             ball.radius = 3; 
             ball.color = "black";
-            paddle.color = "royalBlue";
             info.textContent = "What's that? a small ball?!";
             setTimeout(()=>{
                 ball.radius = sizeBall; 
                 ball.color = "red";
-                paddle.color ="blue";
             },5000);
     
         }
