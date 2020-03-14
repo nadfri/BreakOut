@@ -539,7 +539,7 @@ window.onload = () =>{
         } 
 
     /*************Back to Menu***************************************/
-    document.onkeyup = (e) => {if(e.key == "Escape") document.location = "./index.html";};
+    //document.onkeypress = (e) => {if(e.key == "Escape") document.location = "./index.html";};
 
     /*****************************End of onload**********************/
     };
