@@ -1,9 +1,9 @@
 myCanvas.style.backgroundImage = "url('img/L05.jpg')";
 level.textContent = "Level 5";
 
-const nLine = 14; // number of lines
+const nLine = 15; // number of lines
 const nCol  = 7; // number of columns
-const bricks = new Shape(25,30,50,20,0,"orange"); //(posX,posY,l,h,radius,color)
+const bricks = new Shape(35,30,55,20,0,"orange"); //(posX,posY,l,h,radius,color)
 music.src    = "sounds/tetris2.mp3";
 
 function unlockNextLevel()
@@ -32,7 +32,7 @@ function createBricks(tab)
         for (let col=0; col<nCol; col++) //number of columns
         {	
             tab[line][col]        = Object.create(bricks); //each array is a brick objet
-            tab[line][col].posX   = bricks.posX + (bricks.l+50)*col;
+            tab[line][col].posX   = bricks.posX + (bricks.l+40)*col;
             tab[line][col].posY   = bricks.posY + (bricks.h+5)*line;
             //tab[line][col].color  = tabColours[Math.round(Math.random()*tabColours.length)];
             tab[line][col].status = 1; // add new property 
@@ -40,7 +40,7 @@ function createBricks(tab)
     }
     
 //*************************Special Bricks************************* */
-    for(let i=0; i<nLine;i+=2)
+    for(let i=0; i<nLine;i+=3)
         for (let j=0; j<nCol; j+=3)
             tab[i][j].color = "firebrick";
 
@@ -49,6 +49,8 @@ function createBricks(tab)
 
     tab[11][1].color = "snow";
     tab[11][5].color = "snow";
+    tab[14][2].color = "snow";
+    tab[14][4].color = "snow";
 
     tab[3][3].color = "hotpink";
     tab[7][6].color = "hotpink";
@@ -61,6 +63,7 @@ function createBricks(tab)
     tab[5][6].color = "yellow";
     tab[4][3].color = "yellow";
     tab[6][3].color = "yellow";
+    tab[14][3].color = "yellow";
 
 
 

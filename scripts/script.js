@@ -71,8 +71,6 @@ window.onload = () =>{
     const extraLife = new Audio("sounds/extraLife.mp3");
     
     const tabAudio  = [music,gameover,broken,victory,lost,extraLife];
-    let soundActive = true;
-
     
     /****************Declaration of Local Variables********************/
     const paddle = new Shape(0,0,120,20,0,"blue");
@@ -102,6 +100,10 @@ window.onload = () =>{
             music.play();
             beginGame = true;
         }
+
+        else if(e.key == "Enter") document.location = "./index.html";//press enter to go to menu
+
+
     };
     
     function init()
@@ -496,52 +498,41 @@ window.onload = () =>{
     }
     /***************Sound Control****************************************/
     speaker.onclick = () =>{mute();}
-    
+
+    let getStorage  = localStorage.getItem('saveMute'); //verify if data in storage
+    let soundActive = (getStorage != null)? getStorage : 1;
+
+    if(soundActive == 0)
+    {
+        soundActive = 1;
+        mute();
+    }
+
     function mute()
     {
-        if(soundActive)
+        if(soundActive == 1)
         {
-            soundActive = false;
+            soundActive = 0;
             speaker.textContent = "🔈";
-    
             for (let audio of tabAudio) audio.muted = true;
         }
     
         else
         {
-            soundActive = true;
+            soundActive = 1;
             speaker.textContent = "🔊";
-    
             for (let audio of tabAudio) audio.muted = false;
         }
     
-        const saveMute = {audioStatus : soundActive};
-        localStorage.setItem("saveMute", JSON.stringify(saveMute));
-    
+        localStorage.setItem("saveMute", soundActive); //save data sound
     }
-    /*********************WebStorage************************************ */
-     if(localStorage.getItem('saveMute'))
-        {
-            const saveMute = JSON.parse(localStorage.getItem('saveMute'));
-            soundActive = saveMute.audioStatus;
-    
-            if(soundActive == false)
-            {
-                soundActive = true;
-                mute();
-            }
 
-            else
-            {
-                soundActive = false;
-                mute();
-            }  
-        } 
+
 
     /*************Back to Menu***************************************/
     //document.onkeypress = (e) => {if(e.key == "Escape") document.location = "./index.html";};
 
     /*****************************End of onload**********************/
-    };
+    }
     
 
