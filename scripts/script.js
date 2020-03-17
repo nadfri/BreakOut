@@ -137,11 +137,21 @@ window.onload = () =>{
 
         for(let line of tabBricks)
             for (let brick of line)
-                if (brick.status == 1)
+                if (brick.status == 0)
+                    count--;
+
+        for(let line of tabBricks)
+            for (let brick of line)
+                if (brick.status > 0 && count > 1)
                     brick.drawRect();
 
-                else count--;
-
+                else if (brick.status > 0 && count == 1)
+                {
+                    brick.l = 125;
+                    brick.color = "rgba(253,187,45,0.8)"
+                    brick.drawRect();
+                }
+        
         
         if (count == 0)  drawVictory();
         if (life  == 0)  drawGameOver();
@@ -211,17 +221,19 @@ window.onload = () =>{
         /*********************************Brick Collision*******************************************/
         for (let line of tabBricks)
             for (let brick of line)
-            {	let marge = ball.radius;
+            {	
+                let marge = ball.radius;
         //********************************Brick Horizontal Side*************************************/
                 if(ball.posX > brick.posX 
                 && ball.posX < brick.posX + brick.l 
-                && brick.status == 1) //ball between brick
+                && brick.status > 0) //ball between brick
                 {
                     if(ball.posY - ball.radius <= brick.posY + brick.h 
                     && ball.posY - ball.radius >= brick.posY + brick.h - marge) //bottom side
                     {
                         gravity      =- gravity;
-                        brick.status = 0;
+                        if (brick.status > 1) brick.color = "orange";
+                        brick.status = (brick.status >1)? 1 : 0;
                         power(brick);
                         broken.play(); 	
                     }
@@ -230,22 +242,24 @@ window.onload = () =>{
                     if(ball.posY + ball.radius > brick.posY
                     && ball.posY + ball.radius < brick.posY + marge) //top side
                     {
-                        gravity      =- gravity;
-                        brick.status = 0;
+                        gravity =- gravity;
+                        if (brick.status > 1) brick.color = "orange";
+                        brick.status = (brick.status >1)? 1 : 0;
                         power(brick);
                         broken.play();	
                     }
                 }
                 //****************Brick Corner Bottom******************************************/
                 if(brick.posY + brick.h >= ball.posY - ball.radius
-                && brick.posY + brick.h <= ball.posY && brick.status == 1) 
+                && brick.posY + brick.h <= ball.posY && brick.status > 0) 
     
                     if(brick.posX >= ball.posX
                     && brick.posX <= ball.posX + ball.radius) //left Bottom
                     {
                         gravity = Math.abs(gravity);
                         sens    = (sens>0)? -sens : sens;
-                        brick.status = 0;
+                        if (brick.status > 1) brick.color = "orange";
+                        brick.status = (brick.status >1)? 1 : 0;
                         power(brick);
                         broken.play();
                     }
@@ -256,14 +270,15 @@ window.onload = () =>{
                     {
                         gravity = Math.abs(gravity);
                         sens    = (sens<0)? -sens : sens;
-                        brick.status = 0;
+                        if (brick.status > 1) brick.color = "orange";
+                        brick.status = (brick.status >1)? 1 : 0;
                         power(brick);
                         broken.play();
                     }
                     
                 //******************Brick Corner Top*********************************************/
                 if(brick.posY >= ball.posY 
-                && brick.posY <= ball.posY + ball.radius && brick.status == 1) //ball in Top Corner
+                && brick.posY <= ball.posY + ball.radius && brick.status > 0) //ball in Top Corner
                 
     
                      if(brick.posX  >= ball.posX
@@ -271,7 +286,8 @@ window.onload = () =>{
                     {
                         gravity = -Math.abs(gravity);
                         sens    = (sens>0)? -sens : sens;
-                        brick.status = 0;
+                        if (brick.status > 1) brick.color = "orange";
+                        brick.status = (brick.status >1)? 1 : 0;
                         power(brick);
                         broken.play();
                     }
@@ -281,20 +297,22 @@ window.onload = () =>{
                     {
                         gravity = -Math.abs(gravity);
                         sens    = (sens<0)? -sens : sens;
-                        brick.status = 0;
+                        if (brick.status > 1) brick.color = "orange";
+                        brick.status = (brick.status >1)? 1 : 0;
                         power(brick);
-                        broken.play();//brick.status = 0; 
+                        broken.play();
                     } 
     
                 //***************Brick Vertical Side*******************************************/
                 if(ball.posY > brick.posY 
-                && ball.posY < brick.posY + brick.h && brick.status ==1) //ball between brick.h
+                && ball.posY < brick.posY + brick.h && brick.status > 0) //ball between brick.h
                 {
                     if(ball.posX + ball.radius >= brick.posX 
                     && ball.posX + ball.radius < brick.posX +marge) //left brick side
                     {
                         sens = -sens;
-                        brick.status = 0;
+                        if (brick.status > 1) brick.color = "orange";
+                        brick.status = (brick.status >1)? 1 : 0;
                         power(brick);
                         broken.play();
                     }
@@ -303,7 +321,8 @@ window.onload = () =>{
                          && ball.posX - ball.radius >  brick.posX + brick.l-marge) //right side OK
                     {
                         sens = -sens;
-                        brick.status = 0;
+                        if (brick.status > 1) brick.color = "orange";
+                        brick.status = (brick.status >1)? 1 : 0;
                         power(brick);
                         broken.play();
                     }

@@ -44,7 +44,7 @@ function createBricks(tab)
 
 
     tab[4][8].color = "firebrick";  tab[4][7].color = "purple";
-    tab[4][4].color = "firebrick";  tab[4][1].color = "purple";
+    tab[4][4].color = "snow     ";  tab[4][1].color = "purple";
     tab[2][0].color = "firebrick";  tab[2][7].color = "purple";
     tab[2][8].color = "firebrick";  tab[2][1].color = "purple";
     tab[4][0].color = "firebrick";

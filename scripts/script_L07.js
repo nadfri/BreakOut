@@ -1,7 +1,7 @@
 myCanvas.style.backgroundImage = "url('img/L07.jpg')";
 level.textContent = "Level 7";
 
-const nLine = 7; // number of lines
+const nLine = 10; // number of lines
 const nCol  = 7; // number of columns
 const bricks = new Shape(45,5,80,20,0,"orange"); //(posX,posY,l,h,radius,color)
 music.src    = "sounds/tetris2.mp3";

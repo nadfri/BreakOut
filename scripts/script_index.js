@@ -29,7 +29,7 @@ const tabStorage =
 
 for (let item of tabStorage)
 {
-    if(item.local) 
+    if(item.local =="true") 
     {
         item.div.className = "box unlocked";
         item.div.onclick = () => {document.location = item.html};
