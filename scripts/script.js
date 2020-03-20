@@ -27,7 +27,7 @@ class Shape
         ctx.rect(this.posX,this.posY,this.l,this.h);
         ctx.fillStyle = this.color;
         ctx.fill();
-        ctx.strokeStyle = "black";
+        ctx.strokeStyle = "#282828";
         ctx.stroke();
     }
 
@@ -69,8 +69,9 @@ window.onload = () =>{
     const victory   = new Audio("sounds/victory.mp3");
     const lost      = new Audio("sounds/lost.mp3");
     const extraLife = new Audio("sounds/extraLife.mp3");
+    const launch    = new Audio("sounds/launch.mp3");
     
-    const tabAudio  = [music,gameover,broken,victory,lost,extraLife];
+    const tabAudio  = [music,gameover,broken,victory,lost,extraLife,launch];
     
     /****************Declaration of Local Variables********************/
     const paddle = new Shape(0,0,120,20,0,"blue");
@@ -84,7 +85,7 @@ window.onload = () =>{
     let gravity;
     let sens;
     let count;
-    let life      = 3;
+    let life = 3;
     let tabBricks = [];
 
     /*******************Launch Game *************************************/
@@ -94,7 +95,7 @@ window.onload = () =>{
         {
             sens    		 = 3;
             gravity 		 = 4;
-            music.loop      = true;
+            music.loop       = true;
             beginGame        = true;
             info.textContent = "";
             music.play();
@@ -148,7 +149,7 @@ window.onload = () =>{
                 else if (brick.status > 0 && count == 1)
                 {
                     brick.l = 125;
-                    brick.color = "rgba(253,187,45,0.8)"
+                    brick.color = "green";
                     brick.drawRect();
                 }
         
@@ -163,19 +164,19 @@ window.onload = () =>{
         /********************************Wall Collision************************************/
         if(ball.posY - ball.radius <= 0) //roof
         {
-            gravity = -gravity; 
+            gravity   = -gravity; 
             ball.posY = ball.radius +1;
         }
     
         if(ball.posX - ball.radius <= 0 ) //wall left
         {	
-            sens = -sens; 
+            sens      = -sens; 
             ball.posX = ball.radius +1;
         }
     
         if(ball.posX + ball.radius >= canvasW) //wall right
         {
-            sens = -sens;
+            sens      = -sens;
             ball.posX = canvasW - ball.radius -1;
         }
     
@@ -194,7 +195,7 @@ window.onload = () =>{
             if(ball.posY + ball.radius >= paddle.posY 
             && ball.posY < canvasH) //ball between paddle limitis in Y
             {
-                gravity = -gravity;
+                gravity   = -gravity;
                 ball.posY = paddle.posY - ball.radius -1 //out ball from paddle
     
                 if     (right) sens = +Math.abs(sens); 	
@@ -207,16 +208,16 @@ window.onload = () =>{
             if(paddle.posX  >= ball.posX
             && paddle.posX  <= ball.posX + ball.radius) //Left Corner
             {
-                   gravity = -Math.abs(gravity);
-                   sens    = (sens>0)? -sens : sens;
+                gravity = -Math.abs(gravity);
+                sens    = (sens>0)? -sens : sens;
             }
        
         else if(paddle.posX + paddle.l >= ball.posX - ball.radius
              && paddle.posX + paddle.l <= ball.posX) //Right Corner
-               {
-                   gravity = -Math.abs(gravity);
-                   sens    = (sens<0)? -sens : sens;
-               }
+            {
+                gravity = -Math.abs(gravity);
+                sens    = (sens<0)? -sens : sens;
+            }
     
         /*********************************Brick Collision*******************************************/
         for (let line of tabBricks)
@@ -224,16 +225,19 @@ window.onload = () =>{
             {	
                 let marge = ball.radius;
         //********************************Brick Horizontal Side*************************************/
-                if(ball.posX > brick.posX 
-                && ball.posX < brick.posX + brick.l 
+                if(ball.posX    > brick.posX 
+                && ball.posX    < brick.posX + brick.l 
                 && brick.status > 0) //ball between brick
                 {
                     if(ball.posY - ball.radius <= brick.posY + brick.h 
                     && ball.posY - ball.radius >= brick.posY + brick.h - marge) //bottom side
                     {
-                        gravity      =- gravity;
-                        if (brick.status > 1) brick.color = "orange";
-                        brick.status = (brick.status >1)? 1 : 0;
+                        gravity =- gravity;
+
+                        brick.status--;
+                        if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
+                        if (brick.status == 1) brick.color = "orange";
+
                         power(brick);
                         broken.play(); 	
                     }
@@ -243,8 +247,11 @@ window.onload = () =>{
                     && ball.posY + ball.radius < brick.posY + marge) //top side
                     {
                         gravity =- gravity;
-                        if (brick.status > 1) brick.color = "orange";
-                        brick.status = (brick.status >1)? 1 : 0;
+
+                        brick.status--;
+                        if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
+                        if (brick.status == 1) brick.color = "orange";
+
                         power(brick);
                         broken.play();	
                     }
@@ -258,20 +265,26 @@ window.onload = () =>{
                     {
                         gravity = Math.abs(gravity);
                         sens    = (sens>0)? -sens : sens;
-                        if (brick.status > 1) brick.color = "orange";
-                        brick.status = (brick.status >1)? 1 : 0;
+
+                        brick.status--;
+                        if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
+                        if (brick.status == 1) brick.color = "orange";
+
                         power(brick);
                         broken.play();
                     }
                 
-                //****************Brick Corner Right Bottom*************************************/
+                //****************Brick Corner Right Bottoms*************************************/
                 else if(brick.posX + brick.l >= ball.posX - ball.radius
-                     && brick.posX + brick.l <= ball.posX) //Right Bottom
+                    && brick.posX + brick.l <= ball.posX) //Right Bottom
                     {
                         gravity = Math.abs(gravity);
                         sens    = (sens<0)? -sens : sens;
-                        if (brick.status > 1) brick.color = "orange";
-                        brick.status = (brick.status >1)? 1 : 0;
+
+                        brick.status--;
+                        if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
+                        if (brick.status == 1) brick.color = "orange";
+
                         power(brick);
                         broken.play();
                     }
@@ -279,31 +292,36 @@ window.onload = () =>{
                 //******************Brick Corner Top*********************************************/
                 if(brick.posY >= ball.posY 
                 && brick.posY <= ball.posY + ball.radius && brick.status > 0) //ball in Top Corner
-                
     
-                     if(brick.posX  >= ball.posX
+                    if(brick.posX  >= ball.posX
                     && brick.posX  <= ball.posX + ball.radius) //Left Top
                     {
                         gravity = -Math.abs(gravity);
                         sens    = (sens>0)? -sens : sens;
-                        if (brick.status > 1) brick.color = "orange";
-                        brick.status = (brick.status >1)? 1 : 0;
+
+                        brick.status--;
+                        if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
+                        if (brick.status == 1) brick.color = "orange";
+
                         power(brick);
                         broken.play();
                     }
                     
                 else if(brick.posX + brick.l >= ball.posX - ball.radius
-                     && brick.posX + brick.l <= ball.posX) //Right Top
+                    && brick.posX + brick.l <= ball.posX) //Right Top
                     {
                         gravity = -Math.abs(gravity);
                         sens    = (sens<0)? -sens : sens;
-                        if (brick.status > 1) brick.color = "orange";
-                        brick.status = (brick.status >1)? 1 : 0;
+
+                        brick.status--;
+                        if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
+                        if (brick.status == 1) brick.color = "orange";
+
                         power(brick);
                         broken.play();
                     } 
     
-                //***************Brick Vertical Side*******************************************/
+                //***************Brick Vertical Sides*******************************************/
                 if(ball.posY > brick.posY 
                 && ball.posY < brick.posY + brick.h && brick.status > 0) //ball between brick.h
                 {
@@ -311,23 +329,28 @@ window.onload = () =>{
                     && ball.posX + ball.radius < brick.posX +marge) //left brick side
                     {
                         sens = -sens;
-                        if (brick.status > 1) brick.color = "orange";
-                        brick.status = (brick.status >1)? 1 : 0;
+
+                        brick.status--;
+                        if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
+                        if (brick.status == 1) brick.color = "orange";
+
                         power(brick);
                         broken.play();
                     }
     
                     else if(ball.posX - ball.radius <= brick.posX + brick.l 
-                         && ball.posX - ball.radius >  brick.posX + brick.l-marge) //right side OK
+                         && ball.posX - ball.radius >  brick.posX + brick.l-marge) //right side
                     {
                         sens = -sens;
-                        if (brick.status > 1) brick.color = "orange";
-                        brick.status = (brick.status >1)? 1 : 0;
+
+                        brick.status--;
+                        if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
+                        if (brick.status == 1) brick.color = "orange";
+
                         power(brick);
                         broken.play();
                     }
-                }
-                
+                } 
             }
     
         /*************Final Action************************/
@@ -444,7 +467,7 @@ window.onload = () =>{
 
         else if(item.color == "black") //ball smaller
         {
-            ball.radius = 3; 
+            ball.radius = 5; 
             ball.color = "black";
             info.textContent = "What's that? a small ball?!";
             setTimeout(()=>{
@@ -461,8 +484,29 @@ window.onload = () =>{
             info.textContent = "Yeah! Extra Life!";
             extraLife.play();
             setTimeout(()=>{
-            info.textContent = "";
+                info.textContent = "";
             },2000);
+        }
+
+        else if(item.color == "powderBlue")
+        {
+            beginGame = false;
+            init();
+            info.textContent = "Yeah! The ball on me!";
+            ball.color = "white";
+            paddle.color = "powderBlue";
+            launch.play();
+            document.body.onkeyup = (e)=>
+            {   
+                if(e.key == " ")
+                {
+                    paddle.color = "blue";
+                    ball.color   = "red"; 
+                    info.textContent = "";
+                }
+            };
+
+
         }
     
     }
@@ -489,7 +533,11 @@ window.onload = () =>{
     
         info.textContent = "Press Space Bar to play again";
     
-        document.onkeypress = (e) => {if(e.key == " ") document.location.reload();};
+        document.onkeypress = (e) => {
+            if(e.key == " ") document.location.reload();
+            else if (e.key == "Enter") document.location = "./index.html";
+        };
+
     }
     
     function drawVictory()
@@ -546,12 +594,5 @@ window.onload = () =>{
         localStorage.setItem("saveMute", soundActive); //save data sound
     }
 
-
-
-    /*************Back to Menu***************************************/
-    //document.onkeypress = (e) => {if(e.key == "Escape") document.location = "./index.html";};
-
     /*****************************End of onload**********************/
     }
-    
-

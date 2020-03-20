@@ -1,2 +1,2 @@
 # BreakOut
-BreakOut Game by using Canvas
+Complete BreakOut Game by using Canvas
