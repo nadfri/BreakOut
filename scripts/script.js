@@ -11,6 +11,7 @@ class Shape
         this.h = h;
         this.radius = radius;
         this.color = color;
+        this.stroke = "#282828";
     }
 
     drawCircle()
@@ -27,7 +28,7 @@ class Shape
         ctx.rect(this.posX,this.posY,this.l,this.h);
         ctx.fillStyle = this.color;
         ctx.fill();
-        ctx.strokeStyle = "#282828";
+        ctx.strokeStyle = this.stroke;
         ctx.stroke();
     }
 
@@ -70,8 +71,9 @@ window.onload = () =>{
     const lost      = new Audio("sounds/lost.mp3");
     const extraLife = new Audio("sounds/extraLife.mp3");
     const launch    = new Audio("sounds/launch.mp3");
+    const finalflash= new Audio("sounds/finalflash.mp3")
     
-    const tabAudio  = [music,gameover,broken,victory,lost,extraLife,launch];
+    const tabAudio  = [music,gameover,broken,victory,lost,extraLife,launch,finalflash];
     
     /****************Declaration of Local Variables********************/
     const paddle = new Shape(0,0,120,20,0,"blue");
@@ -505,8 +507,20 @@ window.onload = () =>{
                     info.textContent = "";
                 }
             };
+        }
 
-
+        else if(item.color == "red")
+        {
+            finalflash.play();
+            info.textContent = "Final Flash!!!";
+            ball.color = "gold";
+            paddle.l+=20;
+            paddle.color = "red";
+            init();
+            const interval = setInterval(()=>{
+                ball.radius+=1;
+                if(ball.radius >= 230) clearInterval(interval);   
+            },10);
         }
     
     }
