@@ -73,8 +73,10 @@ window.onload = () =>{
     const launch    = new Audio("sounds/launch.mp3");
     const finalflash= new Audio("sounds/finalflash.mp3");
     const rasengan  = new Audio("sounds/rasengan.mp3");
+    const bigger    = new Audio("sounds/bigger.mp3");
+    const smaller   = new Audio("sounds/smaller.mp3");
     
-    const tabAudio  = [music,gameover,broken,victory,lost,extraLife,launch,rasengan];
+    const tabAudio  = [music,gameover,broken,victory,lost,extraLife,launch,rasengan,bigger,smaller];
     
     /****************Declaration of Local Variables********************/
     const paddle = new Shape(0,0,120,20,0,"blue");
@@ -419,6 +421,7 @@ window.onload = () =>{
     
         else if(item.color == "yellow")
         {
+            bigger.play();
             paddle.l+=20; //paddle bigger
             paddle.color = "yellow";
             info.textContent = "Yeah, paddle is bigger!";
@@ -426,6 +429,7 @@ window.onload = () =>{
         
         else if(item.color == "dimGray") //paddle smaller
         {
+            smaller.play();
             paddle.l-=20;
             paddle.color = "dimGray";
             info.textContent = "What!!!, paddle is smaller!";
