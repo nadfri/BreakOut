@@ -71,9 +71,10 @@ window.onload = () =>{
     const lost      = new Audio("sounds/lost.mp3");
     const extraLife = new Audio("sounds/extraLife.mp3");
     const launch    = new Audio("sounds/launch.mp3");
-    const finalflash= new Audio("sounds/finalflash.mp3")
+    const finalflash= new Audio("sounds/finalflash.mp3");
+    const rasengan  = new Audio("sounds/rasengan.mp3");
     
-    const tabAudio  = [music,gameover,broken,victory,lost,extraLife,launch,finalflash];
+    const tabAudio  = [music,gameover,broken,victory,lost,extraLife,launch,finalflash,rasengan];
     
     /****************Declaration of Local Variables********************/
     const paddle = new Shape(0,0,120,20,0,"blue");
@@ -81,7 +82,7 @@ window.onload = () =>{
     paddle.posY  =  canvasH - paddle.h;
     let paddleSpeed = 10; paddle.control();
     
-    let sizeBall = 7;
+    let sizeBall = 5;
     const ball   = new Shape(0,0,0,0,sizeBall,"red"); //x,y,**,**,radius,color
     
     let gravity;
@@ -234,6 +235,7 @@ window.onload = () =>{
                     if(ball.posY - ball.radius <= brick.posY + brick.h 
                     && ball.posY - ball.radius >= brick.posY + brick.h - marge) //bottom side
                     {
+                        ball.posY = brick.posY + brick.h + ball.radius +1; //ball out the brick
                         gravity =- gravity;
 
                         brick.status--;
@@ -248,6 +250,7 @@ window.onload = () =>{
                     if(ball.posY + ball.radius > brick.posY
                     && ball.posY + ball.radius < brick.posY + marge) //top side
                     {
+                        ball.posY  = brick.posY - ball.radius -1; //ball out the brick
                         gravity =- gravity;
 
                         brick.status--;
@@ -265,8 +268,11 @@ window.onload = () =>{
                     if(brick.posX >= ball.posX
                     && brick.posX <= ball.posX + ball.radius) //left Bottom
                     {
+                        ball.posY = brick.posY + brick.h + ball.radius +1; //ball out the brick
+                        ball.posX  = brick.posX - ball.radius -1; //ball out the brick
+
                         gravity = Math.abs(gravity);
-                        sens    = (sens>0)? -sens : sens;
+                        //sens    = (sens>0)? -sens : sens;
 
                         brick.status--;
                         if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
@@ -276,12 +282,14 @@ window.onload = () =>{
                         broken.play();
                     }
                 
-                //****************Brick Corner Right Bottoms*************************************/
                 else if(brick.posX + brick.l >= ball.posX - ball.radius
-                    && brick.posX + brick.l <= ball.posX) //Right Bottom
+                    && brick.posX + brick.l <= ball.posX) //right Bottom
                     {
+                        ball.posY = brick.posY + brick.h + ball.radius + 1; //ball out the brick
+                        ball.posX = brick.posX + brick.l + ball.radius + 1 //ball out the brick
+                        
                         gravity = Math.abs(gravity);
-                        sens    = (sens<0)? -sens : sens;
+                        //sens    = (sens<0)? -sens : sens;
 
                         brick.status--;
                         if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
@@ -298,8 +306,11 @@ window.onload = () =>{
                     if(brick.posX  >= ball.posX
                     && brick.posX  <= ball.posX + ball.radius) //Left Top
                     {
+                        ball.posY  = brick.posY - ball.radius -1; //ball out the brick
+                        ball.posX  = brick.posX - ball.radius -1; //ball out the brick
+
                         gravity = -Math.abs(gravity);
-                        sens    = (sens>0)? -sens : sens;
+                        //sens    = (sens>0)? -sens : sens;
 
                         brick.status--;
                         if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
@@ -312,8 +323,11 @@ window.onload = () =>{
                 else if(brick.posX + brick.l >= ball.posX - ball.radius
                     && brick.posX + brick.l <= ball.posX) //Right Top
                     {
+                        ball.posY  = brick.posY - ball.radius -1; //ball out the brick
+                        ball.posX  = brick.posX + brick.l + ball.radius + 1 //ball out the brick
+                        
                         gravity = -Math.abs(gravity);
-                        sens    = (sens<0)? -sens : sens;
+                        //sens    = (sens<0)? -sens : sens;
 
                         brick.status--;
                         if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
@@ -330,6 +344,7 @@ window.onload = () =>{
                     if(ball.posX + ball.radius >= brick.posX 
                     && ball.posX + ball.radius < brick.posX +marge) //left brick side
                     {
+                        ball.posX  = brick.posX - ball.radius -1; //ball out the brick
                         sens = -sens;
 
                         brick.status--;
@@ -343,6 +358,7 @@ window.onload = () =>{
                     else if(ball.posX - ball.radius <= brick.posX + brick.l 
                          && ball.posX - ball.radius >  brick.posX + brick.l-marge) //right side
                     {
+                        ball.posX  = brick.posX + brick.l + ball.radius + 1 //ball out the brick
                         sens = -sens;
 
                         brick.status--;
@@ -521,6 +537,27 @@ window.onload = () =>{
                 ball.radius+=1;
                 if(ball.radius >= 230) clearInterval(interval);   
             },10);
+        }
+
+        else if(item.color == "cyan")
+        {
+            rasengan.play();
+            info.textContent = "Rasen Gan!!!";
+            ball.color = "cyan";
+            paddle.color = "red";
+            //beginGame = false;
+            //init();
+            const interval = setInterval(()=>{
+                ball.radius+=1;
+                if(ball.radius >= 50) clearInterval(interval);   
+            },10);
+
+            setTimeout(()=>{
+                info.textContent = "";
+                ball.radius  = sizeBall;
+                ball.color   = "red";
+                paddle.color = "blue";
+            },5000);
         }
     
     }
