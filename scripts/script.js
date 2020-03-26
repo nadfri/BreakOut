@@ -75,8 +75,11 @@ window.onload = () =>{
     const rasengan  = new Audio("sounds/rasengan.mp3");
     const bigger    = new Audio("sounds/bigger.mp3");
     const smaller   = new Audio("sounds/smaller.mp3");
+    const ballSmall = new Audio("sounds/ballSmall.mp3");
+
     
-    const tabAudio  = [music,gameover,broken,victory,lost,extraLife,launch,rasengan,bigger,smaller];
+    const tabAudio  = [music,gameover,broken,victory,lost,extraLife,
+                       launch,rasengan,bigger,smaller,ballSmall];
     
     /****************Declaration of Local Variables********************/
     const paddle = new Shape(0,0,120,20,0,"blue");
@@ -237,28 +240,28 @@ window.onload = () =>{
                     if(ball.posY - ball.radius <= brick.posY + brick.h 
                     && ball.posY - ball.radius >= brick.posY + brick.h - marge) //bottom side
                     {
-                        gravity =- gravity;
-
                         brick.status--;
                         if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
                         if (brick.status == 1) brick.color = "orange";
 
                         power(brick);
                         broken.play(); 	
+
+                        gravity =- gravity;
                     }
     
     
                     if(ball.posY + ball.radius > brick.posY
                     && ball.posY + ball.radius < brick.posY + marge) //top side
                     {
-                        gravity =- gravity;
-
                         brick.status--;
                         if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
                         if (brick.status == 1) brick.color = "orange";
 
                         power(brick);
                         broken.play();	
+
+                        gravity =- gravity;
                     }
                 }
                 //****************Brick Corner Bottom******************************************/
@@ -268,30 +271,30 @@ window.onload = () =>{
                     if(brick.posX >= ball.posX
                     && brick.posX <= ball.posX + ball.radius) //left Bottom
                     {
-                        gravity = Math.abs(gravity);
-                        sens    = (sens>0)? -sens : sens;
-
                         brick.status--;
                         if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
                         if (brick.status == 1) brick.color = "orange";
 
                         power(brick);
                         broken.play();
+
+                        gravity = Math.abs(gravity);
+                        sens    = (sens>0)? -sens : sens;
                     }
                 
                 //****************Brick Corner Right Bottoms*************************************/
                 else if(brick.posX + brick.l >= ball.posX - ball.radius
                     && brick.posX + brick.l <= ball.posX) //Right Bottom
                     {
-                        gravity = Math.abs(gravity);
-                        sens    = (sens<0)? -sens : sens;
-
                         brick.status--;
                         if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
                         if (brick.status == 1) brick.color = "orange";
 
                         power(brick);
                         broken.play();
+
+                        gravity = Math.abs(gravity);
+                        sens    = (sens<0)? -sens : sens;
                     }
                     
                 //******************Brick Corner Top*********************************************/
@@ -301,29 +304,29 @@ window.onload = () =>{
                     if(brick.posX  >= ball.posX
                     && brick.posX  <= ball.posX + ball.radius) //Left Top
                     {
-                        gravity = -Math.abs(gravity);
-                        sens    = (sens>0)? -sens : sens;
-
                         brick.status--;
                         if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
                         if (brick.status == 1) brick.color = "orange";
 
                         power(brick);
                         broken.play();
+
+                        gravity = -Math.abs(gravity);
+                        sens    = (sens>0)? -sens : sens;
                     }
                     
                 else if(brick.posX + brick.l >= ball.posX - ball.radius
                     && brick.posX + brick.l <= ball.posX) //Right Top
                     {
-                        gravity = -Math.abs(gravity);
-                        sens    = (sens<0)? -sens : sens;
-
                         brick.status--;
                         if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
                         if (brick.status == 1) brick.color = "orange";
 
                         power(brick);
                         broken.play();
+
+                        gravity = -Math.abs(gravity);
+                        sens    = (sens<0)? -sens : sens;
                     } 
     
                 //***************Brick Vertical Sides*******************************************/
@@ -333,27 +336,27 @@ window.onload = () =>{
                     if(ball.posX + ball.radius >= brick.posX 
                     && ball.posX + ball.radius < brick.posX +marge) //left brick side
                     {
-                        sens = -sens;
-
                         brick.status--;
                         if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
                         if (brick.status == 1) brick.color = "orange";
 
                         power(brick);
                         broken.play();
+
+                        sens = -sens;
                     }
     
                     else if(ball.posX - ball.radius <= brick.posX + brick.l 
                          && ball.posX - ball.radius >  brick.posX + brick.l-marge) //right side
                     {
-                        sens = -sens;
-
                         brick.status--;
                         if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
                         if (brick.status == 1) brick.color = "orange";
 
                         power(brick);
                         broken.play();
+
+                        sens = -sens;
                     }
                 } 
             }
@@ -474,6 +477,7 @@ window.onload = () =>{
 
         else if(item.color == "black") //ball smaller
         {
+            ballSmall.play();
             ball.radius = 4; 
             ball.color = "black";
             info.textContent = "What's that? a small ball?!";
@@ -497,12 +501,12 @@ window.onload = () =>{
 
         else if(item.color == "powderBlue")
         {
+            launch.play();
             beginGame = false;
             init();
             info.textContent = "Yeah! The ball on me!";
             ball.color = "white";
             paddle.color = "powderBlue";
-            launch.play();
             document.body.onkeyup = (e)=>
             {   
                 if(e.key == " ")
@@ -538,7 +542,7 @@ window.onload = () =>{
                 ball.radius+=1;
                 sens = 0;
                 gravity = 0;
-                if(ball.radius >= 100) clearInterval(interval);   
+                if(ball.radius >= 70) clearInterval(interval);   
             },10);
 
             setTimeout(()=>{
@@ -548,7 +552,7 @@ window.onload = () =>{
                 sens = 3;
                 gravity = 4;
                 info.textContent = "";
-            },2000);
+            },1500);
         }
     
     }

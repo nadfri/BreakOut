@@ -15,7 +15,7 @@ function unlockNextLevel()
 /************************Creation of Bricks**************************************/
 function createBricks(tab)
 {
-    const tabColours = ["royalBlue","rgba(47, 27, 12, 0.7)",
+    const tabColours = ["rgba(47, 27, 12, 0.7)",
                         "rgba(47, 27, 12, 0.7)",
                         "burlyWood","snow","rgba(47, 27, 12, 0.7)",
                         "chartreuse","rgba(47, 27, 12, 0.7)",

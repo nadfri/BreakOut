@@ -49,16 +49,10 @@ for(let i=0; i<nCol;i+=2)
     tab[0][i].status = 1;
 }
 
-for(let i=1; i<nLine;i+=3)
-{
-    tab[i][7].color = "chartreuse";
-    tab[i][7].status = 1;
-}
-
 for(let i=0; i<nLine;i+=3)
 {
-    tab[i][4].color = "black";
-    tab[i][4].status = 1;
+    tab[i][1].color = "black";
+    tab[i][1].status = 1;
 }
 
 
@@ -68,8 +62,20 @@ for(let i=0;i<nLine;i++)
     tab[i][5].status = 0;
 }
 
+tab[1][7].color = "chartreuse";
+tab[1][7].status = 1;
+
+tab[6][7].color = "chartreuse";
+tab[6][7].status = 1;
+
+tab[9][7].color = "chartreuse";
+tab[9][7].status = 1;
+
 tab[nLine-4][0].color = "firebrick";
 tab[nLine-4][0].status = 1; 
+
+tab[5][4].color = "firebrick";
+tab[5][4].status = 1; 
 
 
 tab[2][0].color = "chartreuse";
@@ -84,14 +90,11 @@ tab[3][nCol-3].status = 1;
 tab[nLine-3][nCol-1].color = "cyan";
 tab[nLine-3][nCol-1].status = 1;
 
-tab[6][2].color = "cyan";
-tab[6][2].status = 1;
+tab[7][3].color = "cyan";
+tab[7][3].status = 1;
 
 tab[1][3].color = "cyan";
 tab[1][3].status = 1;
-
-tab[nLine-2][1].color = "cyan";
-tab[nLine-2][1].status = 1;
 
 
 tab[nLine-1][nCol-1].color = "dimGray";
@@ -109,27 +112,23 @@ tab[nLine-1][nCol-4].status = 1;
 tab[nLine-1][3].color = "powderBlue";
 tab[nLine-1][3].status = 1;
 
-tab[nLine-1][2].color = "yellow";
-tab[nLine-1][2].status = 1;
+tab[4][1].color = "powderBlue";
+tab[4][1].status = 1;
+
+tab[nLine-2][1].color = "yellow";
+tab[nLine-2][1].status = 1;
 
 tab[7][0].color = "yellow";
 tab[7][0].status = 1;
 
-tab[1][1].color = "darkGreen";
-tab[1][1].status = 1;
+tab[1][0].color = "darkGreen";
+tab[1][0].status = 1;
 
-tab[8][1].color = "darkGreen";
-tab[8][1].status = 1;
-
-tab[6][7].color = "darkGreen";
-tab[6][7].status = 1;
-
+tab[nLine-1][2].color = "darkGreen";
+tab[nLine-1][2].status = 1;
 
 tab[nLine-2][nCol-1].color = "burlyWood";
 tab[nLine-2][nCol-1].status = 1;
-
-tab[0][nCol-4].color = "burlyWood";
-tab[0][nCol-4].status = 1;
 
 tab[nLine-2][4].color = "purple";
 tab[nLine-2][4].status = 1;
@@ -144,11 +143,14 @@ tab[nLine-1][0].status = 1;
 tab[nLine-3][4].color = "snow";
 tab[nLine-3][4].status = 1;
 
-tab[2][4].color = "hotpink";
-tab[2][4].status = 1;
+tab[2][3].color = "hotpink";
+tab[2][3].status = 1;
 
 tab[nLine-3][2].color = "hotpink";
 tab[nLine-3][2].status = 1;
+
+tab[nLine-3][nCol-2].color = "hotpink";
+tab[nLine-3][nCol-2].status = 1;
 
 
 
