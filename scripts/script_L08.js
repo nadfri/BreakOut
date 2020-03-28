@@ -43,8 +43,8 @@ function createBricks(tab)
    
 
 
-    tab[4][8].color = "firebrick";  tab[4][7].color = "purple";
-    tab[4][4].color = "snow     ";  tab[4][1].color = "purple";
+    tab[4][8].color = "snow";  tab[4][7].color = "purple";
+    tab[4][4].color = "snow";  tab[4][1].color = "purple";
     tab[2][0].color = "firebrick";  tab[2][7].color = "purple";
     tab[2][8].color = "firebrick";  tab[2][1].color = "purple";
     tab[4][0].color = "firebrick";
@@ -55,6 +55,7 @@ function createBricks(tab)
     tab[0][4].color = "burlyWood";
 
     tab[2][4].color = "chartreuse";
+    tab[3][4].color = "hotpink";
 
 
 

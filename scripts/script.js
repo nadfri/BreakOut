@@ -50,6 +50,7 @@ let right         = false;
 let left          = false;
 let stopAnimation = false;
 let beginGame     = false; //to avoid space bar function
+let move;
 
 const myCanvas = document.getElementById("myCanvas");
 const canvasH  = myCanvas.height = 500;
@@ -130,6 +131,9 @@ window.onload = () =>{
         for (let i=0; i<life; i++) 
         heart.textContent += "❤️";
     }
+
+/************************************Creation of Bricks***************************/
+    createBricks(tabBricks); // see script level_xx
     
     function motion()
     {
@@ -153,7 +157,7 @@ window.onload = () =>{
             for (let brick of line)
                 if (brick.status > 0 && count > 1)
                     brick.drawRect();
-
+                
                 else if (brick.status > 0 && count == 1)
                 {
                     brick.l = 125;
@@ -189,13 +193,13 @@ window.onload = () =>{
         }
     
         if (ball.posY + ball.radius >= canvasH) //***Game lost***
-            {
-                life--;
-                beginGame = false;
-                heart.textContent = "";
-                lost.play();
-                init();
-            };
+        {
+            life--;
+            beginGame = false;
+            heart.textContent = "";
+            lost.play();
+            init();
+        }
     
         /********************************Paddle Collision******************************************/
         if(ball.posX > paddle.posX 
@@ -364,14 +368,12 @@ window.onload = () =>{
         /*************Final Action************************/
         ball.posY += gravity
         ball.posX += sens;
+        if(move !== undefined) for(let line of tabBricks) for (let brick of line) moveBricks(brick);
         /*************************************************/
     
         if (!stopAnimation) requestAnimationFrame(motion); // Freeze animation
     }requestAnimationFrame(motion);
     
-    
-    /************************************Creation of Bricks***************************/
-     createBricks(tabBricks); // see script level_xx
     
     /************************************Function Bricks Powers***********************/
     function power(item)
@@ -554,6 +556,7 @@ window.onload = () =>{
                 info.textContent = "";
             },1500);
         }
+
     
     }
     
@@ -639,6 +642,22 @@ window.onload = () =>{
     
         localStorage.setItem("saveMute", soundActive); //save data sound
     }
+
+
+
+
+    /*********Function Move Bricks************************************/
+    function moveBricks(brick)
+    {
+        brick.posX += sensBrick;
+    }
+
+    if(move !== undefined) setInterval(function(){sensBrick = -sensBrick;},3000);
+
+
+
+
+
 
     /*****************************End of onload**********************/
     }
