@@ -50,6 +50,7 @@ let right         = false;
 let left          = false;
 let stopAnimation = false;
 let beginGame     = false; //to avoid space bar function
+let scrollY       = false;
 let move;
 
 const myCanvas = document.getElementById("myCanvas");
@@ -100,15 +101,15 @@ window.onload = () =>{
     /*******************Launch Game *************************************/
     document.onkeypress = (e) =>
     {
-        if(e.key == " " && beginGame == 0) //launch by press bar space
+        if(e.key == " " && beginGame == false) //launch by press bar space
         {
-            sens    		 = 3;
+            sens    		 = 2.5;
             gravity 		 = 4;
             music.loop       = true;
             beginGame        = true;
+            scrollY          = true;
             info.textContent = "";
             music.play();
-            beginGame = true;
         }
 
         else if(e.key == "Enter") document.location = "./index.html";//press enter to go to menu
@@ -164,6 +165,28 @@ window.onload = () =>{
                     brick.color = "green";
                     brick.drawRect();
                 }
+
+            for(let line of tabBricks) //scroll Y bricks
+                for (let brick of line)
+                {
+                    if (brick.posY + brick.h >= canvasH - paddle.h && brick.status>0)
+                    {
+                        gravityBrick = -gravityBrick;
+                        life--;
+                        beginGame = false;
+                        heart.textContent = "";
+                        lost.play();
+                        init();
+                        break;
+                    }
+            
+                    else if (brick.posY <= 0 && brick.status !=0)
+                    {
+                        gravityBrick = -gravityBrick;
+                        break;
+                    }
+            }
+            
         
         
         if (count == 0)  drawVictory();
@@ -380,12 +403,12 @@ window.onload = () =>{
     {
         if(item.color == "firebrick")
         {
-            sens = (sens>=0)?  8 : -8; //ball faster
+            sens = (sens>=0)? 8 : -8; //ball faster
             music.playbackRate = 1.5;
             paddle.color = "firebrick"
             info.textContent = "Faster!!!";
             setTimeout( ()=>{
-                sens = (sens>=0)? 3 : -3;
+                sens = (sens>=0)? 2.5 : -2.5;
                 info.textContent= "";
                 music.playbackRate = 1;
                 paddle.color = "blue";
@@ -394,13 +417,13 @@ window.onload = () =>{
     
         else if(item.color == "snow")
         {	
-            sens = (sens>=0)?  2 : -2; //ball slower
+            sens = (sens>=0)?  1.5 : -1.5; //ball slower
             gravity = (gravity>=0)?  2 : -2;
             music.playbackRate = 0.8;
             paddle.color = "snow";
             info.textContent = "Slower!!!";
             setTimeout( ()=>{
-                sens = (sens>=0)? 3 : -3;
+                sens = (sens>=0)? 2.5 : -2.5;
                 gravity = (gravity>=0)?  4 : -4;
                 info.textContent= "";
                 paddle.color ="blue";
@@ -551,10 +574,19 @@ window.onload = () =>{
                 ball.radius = sizeBall; 
                 ball.color = "red";
                 paddle.color = "blue";
-                sens = 3;
+                sens = 2.5;
                 gravity = 4;
                 info.textContent = "";
             },1500);
+        }
+
+        else if(item.color == "thistle") //Extra Life
+        {
+            info.textContent = "Stop the Scroll, please!";
+            gravityBrick = -gravityBrick;
+            setTimeout(()=>{
+                info.textContent = "";
+            },3000);
         }
 
     
@@ -650,6 +682,8 @@ window.onload = () =>{
     function moveBricks(brick)
     {
         brick.posX += sensBrick;
+        if(scrollY == true)
+        brick.posY -= gravityBrick;
     }
 
     if(move !== undefined) setInterval(function(){sensBrick = -sensBrick;},3000);

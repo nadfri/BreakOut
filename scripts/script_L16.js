@@ -7,6 +7,7 @@ const bricks = new Shape(-200,50,50,20,0,"powderBlue"); //(posX,posY,l,h,radius,
 music.src    = "sounds/offroad.mp3";
 move = true;
 let sensBrick = 2;
+let gravityBrick = 0;
 
 
 function unlockNextLevel()
@@ -86,7 +87,7 @@ for(i=0; i<nCol; i++)
     tab[0][i].status = 5;
 }
 
-for(i=0; i<nLine; i++)
+for(i=0; i<nLine; i+=2)
 {
     tab[i][0].color = "rgba(120,0,0,0.5)";
     tab[i][0].status = 5;
@@ -98,10 +99,11 @@ tab[0][5].color = "powderBlue";
 tab[0][5].status = 10;
 tab[0][7].color = "powderBlue";
 tab[0][7].status = 10;
-//tab[6][5].color = "powderBlue";
-//tab[6][5].status = 10;
-//tab[6][7].color = "powderBlue";
-//tab[6][7].status = 10;
+tab[6][5].color = "powderBlue";
+tab[6][5].status = 10;
+
+tab[6][7].color = "powderBlue";
+tab[6][7].status = 10;
 
 
 tab[3][nCol-1].color = "hotpink";
