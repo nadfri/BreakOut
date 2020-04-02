@@ -2,8 +2,8 @@ myCanvas.style.backgroundImage = "url('img/L16.jpg')";
 level.textContent = "Level 16";
 
 const nLine  = 7; // number of lines
-const nCol   = 13; // number of columns
-const bricks = new Shape(-200,50,50,20,0,"powderBlue"); //(posX,posY,l,h,radius,color)
+const nCol   = 9; // number of columns
+const bricks = new Shape(20,50,50,20,0,"powderBlue"); //(posX,posY,l,h,radius,color)
 music.src    = "sounds/offroad.mp3";
 move = true;
 let sensBrick = 2;
@@ -47,47 +47,51 @@ function createBricks(tab)
 
     
 //*************************Special Bricks************************* */
-tab[3][6].color = "red";
-tab[3][6].posX += 12;
-tab[3][6].l -= 6;
-tab[3][6].status  = 1;
+tab[3][4].color = "red";
+tab[3][4].posX += 5;
+tab[3][4].l -= 7;
+tab[3][4].status  = 1;
 
-tab[1][6].status = 0;
-tab[2][5].status = 0;
+tab[1][4].status = 0;
+tab[2][3].status = 0;
 
-tab[2][6].color = "rgba(120,0,0,0.5)";
-tab[2][6].l = 10;
-tab[2][6].status = 10;
+tab[2][4].color = "rgba(120,0,0,0.5)";
+tab[2][4].posX -= 15;
+tab[2][4].l = 25;
+tab[2][4].status = 10;
 
-tab[2][7].color = "rgba(120,0,0,0.5)";
-tab[2][7].l = 10;
-tab[2][7].status = 10;
+tab[2][5].color = "rgba(120,0,0,0.5)";
+tab[2][5].posX -= 15;
+tab[2][5].l = 25;
+tab[2][5].status = 10;
 
-tab[3][4].status = 0;
+tab[4][4].color = "rgba(120,0,0,0.5)";
+tab[4][4].posX -= 15;
+tab[4][4].l = 25;
+tab[4][4].status = 10;
+
+tab[4][5].color = "rgba(120,0,0,0.5)";
+tab[4][5].posX -= 15;
+tab[4][5].l = 25;
+tab[4][5].status = 10;
+
+tab[3][2].status = 0;
+tab[3][3].status = 0;
 tab[3][5].status = 0;
-tab[3][7].status = 0;
-tab[3][8].status = 0;
-tab[4][5].status = 0;
-
-tab[4][6].color = "rgba(120,0,0,0.5)";
-tab[4][6].l = 10;
-tab[4][6].status = 10;
-
-tab[4][7].color = "rgba(120,0,0,0.5)";
-tab[4][7].l = 10;
-tab[4][7].status = 10;
-
-tab[5][6].status = 0;
+tab[3][6].status = 0;
+tab[4][3].status = 0;
+tab[5][4].status = 0;
 
 for(i=0; i<nCol; i++)
 {
-    tab[nLine-1][i].color = "rgba(120,0,0,0.5)";
-    tab[nLine-1][i].status = 5;
     tab[0][i].color = "rgba(120,0,0,0.5)";
     tab[0][i].status = 5;
+
+    tab[nLine-1][i].color = "rgba(120,0,0,0.5)";
+    tab[nLine-1][i].status = 5;
 }
 
-for(i=0; i<nLine; i+=2)
+for(i=0; i<nLine; i++)
 {
     tab[i][0].color = "rgba(120,0,0,0.5)";
     tab[i][0].status = 5;
@@ -95,15 +99,15 @@ for(i=0; i<nLine; i+=2)
     tab[i][nCol-1].status = 5;
 }
 
+tab[0][3].color = "powderBlue";
+tab[0][3].status = 10;
 tab[0][5].color = "powderBlue";
 tab[0][5].status = 10;
-tab[0][7].color = "powderBlue";
-tab[0][7].status = 10;
+tab[6][3].color = "powderBlue";
+tab[6][3].status = 10;
+
 tab[6][5].color = "powderBlue";
 tab[6][5].status = 10;
-
-tab[6][7].color = "powderBlue";
-tab[6][7].status = 10;
 
 
 tab[3][nCol-1].color = "hotpink";
@@ -113,26 +117,26 @@ tab[0][nCol-2].color = "yellow";
 tab[0][nCol-2].status = 1;
 
 
+tab[1][3].color = "rgba(120,0,0,0.5)";
+tab[1][3].status = 5;
 tab[1][5].color = "rgba(120,0,0,0.5)";
 tab[1][5].status = 5;
-tab[1][7].color = "rgba(120,0,0,0.5)";
-tab[1][7].status = 5;
-tab[2][4].color = "rgba(120,0,0,0.5)";
-tab[2][4].status = 5;
-tab[2][8].color = "rgba(120,0,0,0.5)";
-tab[2][8].status = 5;
-tab[3][3].color = "rgba(120,0,0,0.5)";
-tab[3][3].status = 5;
-tab[3][9].color = "rgba(120,0,0,0.5)";
-tab[3][9].status = 5;
-tab[4][4].color = "rgba(120,0,0,0.5)";
-tab[4][4].status = 5;
-tab[4][8].color = "rgba(120,0,0,0.5)";
-tab[4][8].status = 5;
+tab[2][2].color = "rgba(120,0,0,0.5)";
+tab[2][2].status = 5;
+tab[2][6].color = "rgba(120,0,0,0.5)";
+tab[2][6].status = 5;
+tab[3][1].color = "rgba(120,0,0,0.5)";
+tab[3][1].status = 5;
+tab[3][7].color = "rgba(120,0,0,0.5)";
+tab[3][7].status = 5;
+tab[4][2].color = "rgba(120,0,0,0.5)";
+tab[4][2].status = 5;
+tab[4][6].color = "rgba(120,0,0,0.5)";
+tab[4][6].status = 5;
+tab[5][3].color = "rgba(120,0,0,0.5)";
+tab[5][3].status = 5;
 tab[5][5].color = "rgba(120,0,0,0.5)";
 tab[5][5].status = 5;
-tab[5][7].color = "rgba(120,0,0,0.5)";
-tab[5][7].status = 5;
 
 
 

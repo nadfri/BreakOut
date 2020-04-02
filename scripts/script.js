@@ -50,15 +50,15 @@ let right         = false;
 let left          = false;
 let stopAnimation = false;
 let beginGame     = false; //to avoid space bar function
+let move; // allow brick moving
 let scrollY       = false;
-let move;
 
 const myCanvas = document.getElementById("myCanvas");
 const canvasH  = myCanvas.height = 500;
 const canvasW  = myCanvas.width  = 700;
 const ctx      = myCanvas.getContext("2d");
 
-let music     = new Audio("sounds/tetris.mp3");
+let music      = new Audio("sounds/tetris.mp3");
 
 
 /*****************************Start of onload***************************/
@@ -84,10 +84,10 @@ window.onload = () =>{
                        launch,rasengan,bigger,smaller,ballSmall];
     
     /****************Declaration of Local Variables********************/
-    const paddle = new Shape(0,0,120,20,0,"blue");
+    const paddle = new Shape(0,0,120,20,0,"blue"); // x,y, width,high,*,color
     paddle.posX  = (canvasW - paddle.l)/2;
     paddle.posY  =  canvasH - paddle.h;
-    let paddleSpeed = 10; paddle.control();
+    let paddleSpeed = 10; 
     
     let sizeBall = 7;
     const ball   = new Shape(0,0,0,0,sizeBall,"red"); //x,y,**,**,radius,color
@@ -114,9 +114,8 @@ window.onload = () =>{
 
         else if(e.key == "Enter") document.location = "./index.html";//press enter to go to menu
 
-
     };
-    
+    /*******************Function initialize*******************************/
     function init()
     {
         ball.posX = paddle.posX+paddle.l/2;
@@ -125,15 +124,14 @@ window.onload = () =>{
         sens    = 0;
         if(heart.textContent == "") heartUpadte();
     }
-    
+    /*******************Function Updating Life*******************************/
     function heartUpadte()
     {
         heart.textContent = "";
         for (let i=0; i<life; i++) 
         heart.textContent += "❤️";
     }
-
-/************************************Creation of Bricks***************************/
+    /************************************Creation of Bricks**********************/
     createBricks(tabBricks); // see script level_xx
     
     function motion()
@@ -142,6 +140,7 @@ window.onload = () =>{
         ctx.clearRect(0, 0, canvasW, canvasH); //clear canvas
         ball.drawCircle();
         paddle.drawRect();
+        paddle.control();
         count = nLine*nCol; //number of bricks
 
         if(beginGame == false) // init before to play
@@ -149,27 +148,32 @@ window.onload = () =>{
             init();
         }
 
-        for(let line of tabBricks)
+        /****************Draw Updating**************************************/
+
+        for(let line of tabBricks) //Count of bricks destroyed
             for (let brick of line)
                 if (brick.status == 0)
                     count--;
 
-        for(let line of tabBricks)
+
+        for(let line of tabBricks)  //Draw rest of bricks
             for (let brick of line)
                 if (brick.status > 0 && count > 1)
                     brick.drawRect();
                 
-                else if (brick.status > 0 && count == 1)
+                else if (brick.status > 0 && count == 1) //last brick bigger
                 {
                     brick.l = 125;
                     brick.color = "green";
                     brick.drawRect();
                 }
 
-            for(let line of tabBricks) //scroll Y bricks
+        if(move !=undefined) //scroll of bricks
+        {            
+            for(let line of tabBricks) 
                 for (let brick of line)
                 {
-                    if (brick.posY + brick.h >= canvasH - paddle.h && brick.status>0)
+                    if (brick.posY + brick.h >= canvasH - paddle.h && brick.status>0) //ground
                     {
                         gravityBrick = -gravityBrick;
                         life--;
@@ -180,14 +184,38 @@ window.onload = () =>{
                         break;
                     }
             
-                    else if (brick.posY <= 0 && brick.status !=0)
+                    else if (brick.posY <= 0 && brick.status !=0) //roof
                     {
                         gravityBrick = -gravityBrick;
                         break;
                     }
-            }
+
+
+                    if (brick.posX <= 0 && brick.status !=0) //left side
+                    {   
+                        sensBrick = -sensBrick;
+                        break;
+                    } 
+
+
+                    else if (brick.posX + brick.l >= canvasW && brick.status !=0) //right
+                    {   
+                        sensBrick = -sensBrick;
+                        break;
+                    }
+
+                }
+
+        }
             
-        
+        if(move !== undefined) for(let line of tabBricks) for (let brick of line) moveBricks(brick);
+
+        function moveBricks(brick)
+        {
+            brick.posX += sensBrick;
+            if(scrollY == true)
+            brick.posY -= gravityBrick;
+        }
         
         if (count == 0)  drawVictory();
         if (life  == 0)  drawGameOver();
@@ -391,7 +419,6 @@ window.onload = () =>{
         /*************Final Action************************/
         ball.posY += gravity
         ball.posX += sens;
-        if(move !== undefined) for(let line of tabBricks) for (let brick of line) moveBricks(brick);
         /*************************************************/
     
         if (!stopAnimation) requestAnimationFrame(motion); // Freeze animation
@@ -404,7 +431,7 @@ window.onload = () =>{
         if(item.color == "firebrick")
         {
             sens = (sens>=0)? 8 : -8; //ball faster
-            music.playbackRate = 1.5;
+            music.playbackRate = 1.4;
             paddle.color = "firebrick"
             info.textContent = "Faster!!!";
             setTimeout( ()=>{
@@ -415,7 +442,7 @@ window.onload = () =>{
             },5000);
         }
     
-        else if(item.color == "snow")
+        if(item.color == "snow")
         {	
             sens = (sens>=0)?  1.5 : -1.5; //ball slower
             gravity = (gravity>=0)?  2 : -2;
@@ -431,7 +458,7 @@ window.onload = () =>{
             },5000);
         }
         
-        else if(item.color == "chartreuse")//random sens
+        if(item.color == "chartreuse") //random sens
         {
             sens = 0;
             gravity = 1;
@@ -447,15 +474,15 @@ window.onload = () =>{
             },1000);
         }
     
-        else if(item.color == "yellow")
+        if(item.color == "yellow") //paddle bigger
         {
             bigger.play();
-            paddle.l+=20; //paddle bigger
+            paddle.l+=20; 
             paddle.color = "yellow";
             info.textContent = "Yeah, paddle is bigger!";
         }
         
-        else if(item.color == "dimGray") //paddle smaller
+        if(item.color == "dimGray") //paddle smaller
         {
             smaller.play();
             paddle.l-=20;
@@ -463,7 +490,7 @@ window.onload = () =>{
             info.textContent = "What!!!, paddle is smaller!";
         }
     
-        else if(item.color == "burlyWood") //paddle speed lower
+        if(item.color == "burlyWood") //paddle speed lower
         {
             paddleSpeed = 5;
             paddle.color = "burlyWood";
@@ -475,7 +502,7 @@ window.onload = () =>{
             },5000);
         }
         
-        else if(item.color == "purple") //paddle speed faster
+        if(item.color == "purple") //paddle speed faster
         {
             paddleSpeed = 15;
             paddle.color = "purple";
@@ -488,7 +515,7 @@ window.onload = () =>{
             
         }
     
-        else if(item.color == "darkGreen") //ball bigger
+        if(item.color == "darkGreen") //ball bigger
         {
             ball.radius = 20; 
             ball.color = "orangered";
@@ -500,7 +527,7 @@ window.onload = () =>{
     
         }
 
-        else if(item.color == "black") //ball smaller
+        if(item.color == "black") //ball smaller
         {
             ballSmall.play();
             ball.radius = 4; 
@@ -513,7 +540,7 @@ window.onload = () =>{
     
         }
     
-        else if(item.color == "hotpink") //Extra Life
+        if(item.color == "hotpink") //Extra Life
         {
             life++;
             heartUpadte();
@@ -524,7 +551,7 @@ window.onload = () =>{
             },2000);
         }
 
-        else if(item.color == "powderBlue")
+        if(item.color == "powderBlue") //Ball on paddle
         {
             launch.play();
             beginGame = false;
@@ -543,7 +570,7 @@ window.onload = () =>{
             };
         }
 
-        else if(item.color == "red")
+        if(item.color == "red") //Extra Giant Ball
         {
             finalflash.play();
             info.textContent = "Final Flash!!!";
@@ -557,7 +584,7 @@ window.onload = () =>{
             },10);
         }
 
-        else if(item.color == "cyan")
+        if(item.color == "cyan") //Extra Ball
         {
             rasengan.play();
             info.textContent = "Rasen Gan!!!";
@@ -580,7 +607,7 @@ window.onload = () =>{
             },1500);
         }
 
-        else if(item.color == "thistle") //Extra Life
+        if(item.color == "thistle") //Extra Life
         {
             info.textContent = "Stop the Scroll, please!";
             gravityBrick = -gravityBrick;
@@ -675,22 +702,13 @@ window.onload = () =>{
         localStorage.setItem("saveMute", soundActive); //save data sound
     }
 
-
-
-
-    /*********Function Move Bricks************************************/
-    function moveBricks(brick)
+    /*********************Browse Array 2D*******************************/
+    function browse2D(tab,action)
     {
-        brick.posX += sensBrick;
-        if(scrollY == true)
-        brick.posY -= gravityBrick;
+        for(let line of tab) 
+            for (let brick of line)
+                action(brick);
     }
-
-    if(move !== undefined) setInterval(function(){sensBrick = -sensBrick;},3000);
-
-
-
-
 
 
     /*****************************End of onload**********************/
