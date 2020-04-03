@@ -46,30 +46,30 @@ class Shape
     }
 }
 
-let right         = false;
-let left          = false;
-let stopAnimation = false;
-let beginGame     = false; //to avoid space bar function
-let move; // allow brick moving
-let scrollY       = false;
-
 const myCanvas = document.getElementById("myCanvas");
 const canvasH  = myCanvas.height = 500;
 const canvasW  = myCanvas.width  = 700;
 const ctx      = myCanvas.getContext("2d");
 
-let music      = new Audio("sounds/tetris.mp3");
+let right         = false;
+let left          = false;
+let stopAnimation = false;
+let beginGame     = false; //to avoid space bar function
+let move;                  // allow brick moving
+let scrollY       = false;
 
+
+let music      = new Audio("sounds/tetris.mp3");
+let soundActive;
 
 /*****************************Start of onload***************************/
 window.onload = () =>{
     "use strict";
 
     /******************************Audios******************************/
-    
     const gameover  = new Audio("sounds/gameover.mp3");
     const broken    = new Audio("sounds/broken.wav");
-    const victory   = new Audio("sounds/victory.mp3");
+    const win       = new Audio("sounds/win.mp3");
     const lost      = new Audio("sounds/lost.mp3");
     const extraLife = new Audio("sounds/extraLife.mp3");
     const launch    = new Audio("sounds/launch.mp3");
@@ -78,17 +78,17 @@ window.onload = () =>{
     const bigger    = new Audio("sounds/bigger.mp3");
     const smaller   = new Audio("sounds/smaller.mp3");
     const ballSmall = new Audio("sounds/ballSmall.mp3");
+    const random    = new Audio("sounds/random.mp3");
 
-    
-    const tabAudio  = [music,gameover,broken,victory,lost,extraLife,
-                       launch,rasengan,bigger,smaller,ballSmall];
+    const tabAudio  = [music,gameover,broken,win,lost,extraLife,
+                       launch,rasengan,bigger,smaller,ballSmall,random];
     
     /****************Declaration of Local Variables********************/
     const paddle = new Shape(0,0,120,20,0,"blue"); // x,y, width,high,*,color
     paddle.posX  = (canvasW - paddle.l)/2;
     paddle.posY  =  canvasH - paddle.h;
-    let paddleSpeed = 10; 
-    
+    let paddleSpeed = 10;
+
     let sizeBall = 7;
     const ball   = new Shape(0,0,0,0,sizeBall,"red"); //x,y,**,**,radius,color
     
@@ -98,55 +98,23 @@ window.onload = () =>{
     let life = 3;
     let tabBricks = [];
 
-    /*******************Launch Game *************************************/
-    document.onkeypress = (e) =>
-    {
-        if(e.key == " " && beginGame == false) //launch by press bar space
-        {
-            sens    		 = 2.5;
-            gravity 		 = 4;
-            music.loop       = true;
-            beginGame        = true;
-            scrollY          = true;
-            info.textContent = "";
-            music.play();
-        }
-
-        else if(e.key == "Enter") document.location = "./index.html";//press enter to go to menu
-
-    };
-    /*******************Function initialize*******************************/
-    function init()
-    {
-        ball.posX = paddle.posX+paddle.l/2;
-        ball.posY = paddle.posY-ball.radius;
-        gravity = 0;
-        sens    = 0;
-        if(heart.textContent == "") heartUpadte();
-    }
-    /*******************Function Updating Life*******************************/
-    function heartUpadte()
-    {
-        heart.textContent = "";
-        for (let i=0; i<life; i++) 
-        heart.textContent += "❤️";
-    }
-    /************************************Creation of Bricks**********************/
-    createBricks(tabBricks); // see script level_xx
+    /*01*/heartUpdate();
+    /*02*/speakerControl()
+    /*03*/launchGame();
+    /*04*/createBricks(tabBricks); //Creation of bricks, see script level_xx
+    /*05*/requestAnimationFrame(motion); //Animation of shape
     
     function motion()
     {
         /******************Draw Shape***************************************/
         ctx.clearRect(0, 0, canvasW, canvasH); //clear canvas
-        ball.drawCircle();
-        paddle.drawRect();
-        paddle.control();
-        count = nLine*nCol; //number of bricks
+        ball.drawCircle(); //draw ball
+        paddle.drawRect(); //draw paddle
+        paddle.control();  //launch paddle control
+        count = nLine*nCol;//number of bricks
 
-        if(beginGame == false) // init before to play
-        {
-            init();
-        }
+        if(beginGame == false) init(); //init before to play
+        
 
         /****************Draw Updating**************************************/
 
@@ -176,11 +144,7 @@ window.onload = () =>{
                     if (brick.posY + brick.h >= canvasH - paddle.h && brick.status>0) //ground
                     {
                         gravityBrick = -gravityBrick;
-                        life--;
-                        beginGame = false;
-                        heart.textContent = "";
-                        lost.play();
-                        init();
+                        losingLife();
                         break;
                     }
             
@@ -205,7 +169,6 @@ window.onload = () =>{
                     }
 
                 }
-
         }
             
         if(move !== undefined) for(let line of tabBricks) for (let brick of line) moveBricks(brick);
@@ -217,8 +180,8 @@ window.onload = () =>{
             brick.posY -= gravityBrick;
         }
         
-        if (count == 0)  drawVictory();
-        if (life  == 0)  drawGameOver();
+        if (count == 0)  victory();
+        if (life  == 0)  gameOver();
     
         /********************************Motion Paddle***************************************/
         if(right && paddle.posX < canvasW-paddle.l) paddle.posX+= paddleSpeed;
@@ -243,15 +206,8 @@ window.onload = () =>{
             ball.posX = canvasW - ball.radius -1;
         }
     
-        if (ball.posY + ball.radius >= canvasH) //***Game lost***
-        {
-            life--;
-            beginGame = false;
-            heart.textContent = "";
-            lost.play();
-            init();
-        }
-    
+        if (ball.posY + ball.radius >= canvasH) losingLife();//Game lost
+
         /********************************Paddle Collision******************************************/
         if(ball.posX > paddle.posX 
         && ball.posX < paddle.posX + paddle.l) //ball between paddle limits in X
@@ -420,295 +376,328 @@ window.onload = () =>{
         ball.posY += gravity
         ball.posX += sens;
         /*************************************************/
-    
+        
+ 
         if (!stopAnimation) requestAnimationFrame(motion); // Freeze animation
-    }requestAnimationFrame(motion);
-    
-    
-    /************************************Function Bricks Powers***********************/
-    function power(item)
-    {
-        if(item.color == "firebrick")
-        {
-            sens = (sens>=0)? 8 : -8; //ball faster
-            music.playbackRate = 1.4;
-            paddle.color = "firebrick"
-            info.textContent = "Faster!!!";
-            setTimeout( ()=>{
-                sens = (sens>=0)? 2.5 : -2.5;
-                info.textContent= "";
-                music.playbackRate = 1;
-                paddle.color = "blue";
-            },5000);
-        }
-    
-        if(item.color == "snow")
-        {	
-            sens = (sens>=0)?  1.5 : -1.5; //ball slower
-            gravity = (gravity>=0)?  2 : -2;
-            music.playbackRate = 0.8;
-            paddle.color = "snow";
-            info.textContent = "Slower!!!";
-            setTimeout( ()=>{
-                sens = (sens>=0)? 2.5 : -2.5;
-                gravity = (gravity>=0)?  4 : -4;
-                info.textContent= "";
-                paddle.color ="blue";
-                music.playbackRate = 1;
-            },5000);
-        }
-        
-        if(item.color == "chartreuse") //random sens
-        {
-            sens = 0;
-            gravity = 1;
-            paddle.color = "chartreuse";
-            ball.color = "paleGreen";
-            info.textContent= "Hey ball! what are you doing?";
-            setTimeout( ()=>{
-                sens = Math.random()*7+1;
-                gravity = 5;
-                ball.color = "red";
-                paddle.color = "blue";
-                info.textContent= "";
-            },1000);
-        }
-    
-        if(item.color == "yellow") //paddle bigger
-        {
-            bigger.play();
-            paddle.l+=20; 
-            paddle.color = "yellow";
-            info.textContent = "Yeah, paddle is bigger!";
-        }
-        
-        if(item.color == "dimGray") //paddle smaller
-        {
-            smaller.play();
-            paddle.l-=20;
-            paddle.color = "dimGray";
-            info.textContent = "What!!!, paddle is smaller!";
-        }
-    
-        if(item.color == "burlyWood") //paddle speed lower
-        {
-            paddleSpeed = 5;
-            paddle.color = "burlyWood";
-            info.textContent = "Nooo! Paddle is slower!";
-            setTimeout( ()=>{
-                paddleSpeed = 10;
-                paddle.color = "blue";
-                info.textContent= "";
-            },5000);
-        }
-        
-        if(item.color == "purple") //paddle speed faster
-        {
-            paddleSpeed = 15;
-            paddle.color = "purple";
-            info.textContent = "Paddle is faster!";
-            setTimeout( ()=>{
-                paddleSpeed = 10;
-                paddle.color = "blue";
-                info.textContent= "";
-            },5000);
-            
-        }
-    
-        if(item.color == "darkGreen") //ball bigger
-        {
-            ball.radius = 20; 
-            ball.color = "orangered";
-            info.textContent = "What's that? a big ball?!";
-            setTimeout(()=>{
-                ball.radius = sizeBall; 
-                ball.color = "red";
-            },5000);
-    
-        }
-
-        if(item.color == "black") //ball smaller
-        {
-            ballSmall.play();
-            ball.radius = 4; 
-            ball.color = "black";
-            info.textContent = "What's that? a small ball?!";
-            setTimeout(()=>{
-                ball.radius = sizeBall; 
-                ball.color = "red";
-            },5000);
-    
-        }
-    
-        if(item.color == "hotpink") //Extra Life
-        {
-            life++;
-            heartUpadte();
-            info.textContent = "Yeah! Extra Life!";
-            extraLife.play();
-            setTimeout(()=>{
-                info.textContent = "";
-            },2000);
-        }
-
-        if(item.color == "powderBlue") //Ball on paddle
-        {
-            launch.play();
-            beginGame = false;
-            init();
-            info.textContent = "Yeah! The ball on me!";
-            ball.color = "white";
-            paddle.color = "powderBlue";
-            document.body.onkeyup = (e)=>
-            {   
-                if(e.key == " ")
-                {
-                    paddle.color = "blue";
-                    ball.color   = "red"; 
-                    info.textContent = "";
-                }
-            };
-        }
-
-        if(item.color == "red") //Extra Giant Ball
-        {
-            finalflash.play();
-            info.textContent = "Final Flash!!!";
-            ball.color = "gold";
-            paddle.l+=20;
-            paddle.color = "red";
-            init();
-            const interval = setInterval(()=>{
-                ball.radius+=1;
-                if(ball.radius >= 230) clearInterval(interval);   
-            },10);
-        }
-
-        if(item.color == "cyan") //Extra Ball
-        {
-            rasengan.play();
-            info.textContent = "Rasen Gan!!!";
-            ball.color = "cyan";
-            paddle.color = "red";
-            const interval = setInterval(()=>{
-                ball.radius+=1;
-                sens = 0;
-                gravity = 0;
-                if(ball.radius >= 70) clearInterval(interval);   
-            },10);
-
-            setTimeout(()=>{
-                ball.radius = sizeBall; 
-                ball.color = "red";
-                paddle.color = "blue";
-                sens = 2.5;
-                gravity = 4;
-                info.textContent = "";
-            },1500);
-        }
-
-        if(item.color == "thistle") //Extra Life
-        {
-            info.textContent = "Stop the Scroll, please!";
-            gravityBrick = -gravityBrick;
-            setTimeout(()=>{
-                info.textContent = "";
-            },3000);
-        }
-
-    
     }
-    
-    /***********************************Functions Victory/Game Over***************/
-    function drawGameOver()
+
+
+/*******************Function Launch Game *************************************/
+function launchGame()
+{
+    document.onkeypress = (e) =>
     {
-        ctx.beginPath();
-        ctx.rect(0,canvasH/2-40,canvasW,100);
-        ctx.fillStyle = "white";
-        ctx.fill();
-        ctx.strokeStyle = "red";
-        ctx.stroke();
-    
-        ctx.fillStyle = "blue";
-        ctx.font = "70px orbitron";
-        ctx.fillText("GAME OVER",100,canvasH/2+30);
-        ctx.strokeStyle = "red";
-        ctx.strokeText("GAME OVER",100,canvasH/2+30);
-    
-        music.pause();
-        gameover.play();
+        if(e.key == " " && beginGame == false) //launch by press bar space
+        {
+            beginGame        = true;
+            sens    		 = 2.5;
+            gravity 		 = 4;
+            music.loop       = true;
+            scrollY          = true;
+            info.textContent = "";
+            music.play();
+        }
+
+        if(e.key == "Enter") document.location = "./index.html";//press enter to go to menu
+
+        if(e.keyCode == 112 ) gamePause();
+    };
+}
+
+/*******************Function initialize*******************************/
+function init()
+{
+    ball.posX = paddle.posX+paddle.l/2;
+    ball.posY = paddle.posY-ball.radius;
+    gravity = 0;
+    sens    = 0;
+    info.textContent = "Press Space Bar to launch the Ball";
+}
+
+/***********************************Diplay of life***************/
+function heartUpdate()
+{
+    heart.textContent = "";
+    for (let i=0; i<life; i++) heart.textContent += "❤️";
+}
+
+/***********************************Function Losing a life***************/
+function losingLife()
+{
+    lost.play();
+    life--;
+    heartUpdate()
+
+    beginGame = false;
+    init();
+}
+
+/***********************************Draw message after Lost/win***************/
+function drawMessage(text,posX)
+{
+    ctx.beginPath();
+    ctx.rect(0,canvasH/2-40,canvasW,100);
+    ctx.fillStyle = "white";
+    ctx.fill();
+    ctx.strokeStyle = "red";
+    ctx.stroke();
+
+    ctx.fillStyle = "blue";
+    ctx.font = "70px orbitron";
+    ctx.fillText(text,posX,canvasH/2+30);
+    ctx.strokeStyle = "red";
+    ctx.strokeText(text,posX,canvasH/2+30);
+}
+
+/***********************************Function Game Over***************/
+function gameOver()
+{
+    drawMessage("GAME OVER", 100);
+
+    music.pause();
+    gameover.play();
+    stopAnimation = true;
+
+    info.textContent = "Press Space Bar to play again";
+
+    document.onkeypress = (e) => {
+        if(e.key == " ") document.location.reload();
+        else if (e.key == "Enter") document.location = "./index.html";
+    };
+}
+
+/***********************************Function Victory***************/
+function victory()
+{
+    drawMessage("VICTORY!", 150);
+        
+    music.pause();
+    win.play();
+    stopAnimation = true;	
+
+    setInterval( ()=>{info.textContent = "Press Space Bar to unlock the Next Level";}
+    ,1000); //TODO: clear all setTimeOut()
+
+    unlockNextLevel();
+}
+
+/*******************************Function PAUSE********************* */
+function gamePause()
+{
+    if(stopAnimation == false)
+    {
+        info.textContent = "***GAME IS PAUSED***";
+        music.pause();          
         stopAnimation = true;
-    
-        info.textContent = "Press Space Bar to play again";
-    
-        document.onkeypress = (e) => {
-            if(e.key == " ") document.location.reload();
-            else if (e.key == "Enter") document.location = "./index.html";
-        };
+    }
 
-    }
-    
-    function drawVictory()
+    else 
     {
-        ctx.beginPath();
-        ctx.rect(0,canvasH/2-40,canvasW,100);
-        ctx.fillStyle = "white";
-        ctx.fill();
-        ctx.strokeStyle = "red";
-        ctx.stroke();
-        
-        ctx.fillStyle = "blue";
-        ctx.font = "70px orbitron";
-        ctx.fillText("VICTORY!",150,canvasH/2+30);
-        ctx.strokeStyle = "red";
-        ctx.strokeText("VICTORY!",150,canvasH/2+30);
-            
-        music.pause();
-        victory.play();
-        stopAnimation = true;	
-        setInterval( ()=>{info.textContent = "Press Space Bar to unlock the Next Level";}
-        ,1000);
-    
-        unlockNextLevel();
+        music.play();
+        stopAnimation = false;
+        requestAnimationFrame(motion); 
     }
-    /***************Sound Control****************************************/
+            
+}   
+
+/***************Sound Control****************************************/
+function speakerControl()
+{
     speaker.onclick = () =>{mute();}
 
     let getStorage  = localStorage.getItem('saveMute'); //verify if data in storage
-    let soundActive = (getStorage != null)? getStorage : 1;
+    soundActive = (getStorage != null)? getStorage : 1;
 
     if(soundActive == 0)
     {
         soundActive = 1;
         mute();
     }
+}
 
-    function mute()
+function mute()
+{
+    if(soundActive == 1)
     {
-        if(soundActive == 1)
-        {
-            soundActive = 0;
-            speaker.textContent = "🔈";
-            for (let audio of tabAudio) audio.muted = true;
-        }
-    
-        else
-        {
-            soundActive = 1;
-            speaker.textContent = "🔊";
-            for (let audio of tabAudio) audio.muted = false;
-        }
-    
-        localStorage.setItem("saveMute", soundActive); //save data sound
+        soundActive = 0;
+        speaker.textContent = "🔈";
+        for (let audio of tabAudio) audio.muted = true;
     }
 
-    /*********************Browse Array 2D*******************************/
-    function browse2D(tab,action)
+    else
     {
-        for(let line of tab) 
-            for (let brick of line)
-                action(brick);
+        soundActive = 1;
+        speaker.textContent = "🔊";
+        for (let audio of tabAudio) audio.muted = false;
     }
+
+    localStorage.setItem("saveMute", soundActive); //save data sound
+}
+
+/************************************Function Bricks Powers***********************/
+function resetPower()
+{
+    if(paddle.color != "yellow" || paddle.color != "dimGray")
+       paddle.color  = "blue";
+
+    paddleSpeed        = 10;
+    ball.color         = "red";
+    ball.radius        = sizeBall; 
+    info.textContent   = "";
+    music.playbackRate = 1;
+    sens    = (sens>=0)? 2.5 : -2.5;
+    gravity = (gravity>=0)?  4 : -4;
+}
+
+function power(item)
+{
+    if(item.color == "firebrick")
+    {
+        sens = (sens>=0)? 8 : -8; //ball faster
+        music.playbackRate = 1.4;
+        ball.color = "firebrick";
+        info.textContent = "Faster!!!";
+        setTimeout(()=>{resetPower()},5000);
+    }
+
+    if(item.color == "snow")
+    {	
+        sens    = (sens>=0)?  1.5 : -1.5; //ball slower
+        gravity = (gravity>=0)?  2 : -2;
+        music.playbackRate = 0.8;
+        ball.color = "snow";
+        info.textContent = "Slower!!!";
+        setTimeout(()=>{resetPower()},5000);
+    }
+    
+    if(item.color == "chartreuse") //random sens
+    {
+        sens    = 0;
+        gravity = 1;
+        ball.color = "paleGreen";
+        info.textContent= "Hey ball! what are you doing?";
+
+        setTimeout( ()=>{
+            random.play();
+            sens    = (Math.random()*7+1)*Math.pow(-1,Math.random().toFixed(1)*10);
+            gravity = 4;
+            ball.color = "red";
+            info.textContent= "";
+        },1000);
+    }
+
+    if(item.color == "yellow") //paddle bigger
+    {
+        bigger.play();
+        paddle.l += 20; 
+        paddle.color = "yellow";
+        info.textContent = "Yeah, paddle is bigger!";
+    }
+    
+    if(item.color == "dimGray") //paddle smaller
+    {
+        smaller.play();
+        paddle.l-=20;
+        paddle.color = "dimGray";
+        info.textContent = "What!!!, paddle is smaller!";
+    }
+
+    if(item.color == "burlyWood") //paddle speed lower
+    {
+        paddleSpeed  = 5;
+        paddle.color = "burlyWood";
+        info.textContent = "Nooo! Paddle is slower!";
+        setTimeout(()=>{resetPower()},5000);
+    }
+    
+    if(item.color == "purple") //paddle speed faster
+    {
+        paddleSpeed  = 15;
+        paddle.color = "purple";
+        info.textContent = "Paddle is faster!";
+        setTimeout(()=>{resetPower()},5000);
+    }
+
+    if(item.color == "darkGreen") //ball bigger
+    {
+        ball.radius = 20; 
+        ball.color  = "darkGreen";
+        info.textContent = "What's that? a big ball?!";
+        setTimeout(()=>{resetPower()},5000);
+    }
+
+    if(item.color == "black") //ball smaller
+    {
+        ballSmall.play();
+        ball.radius = 4; 
+        ball.color  = "black";
+        info.textContent = "What's that? a small ball?!";
+        setTimeout(()=>{resetPower()},5000);
+    }
+
+    if(item.color == "hotpink") //Extra Life
+    {
+        life++;
+        heartUpdate();
+        info.textContent = "Yeah! Extra Life!";
+        extraLife.play();
+        setTimeout(()=>{resetPower()},2000);
+    }
+
+    if(item.color == "powderBlue") //Ball on paddle
+    {
+        launch.play();
+        info.textContent = "Yeah! The ball on me!";
+        ball.color   = "white";
+        paddle.color = "powderBlue";
+
+        beginGame = false;
+        init();
+        document.body.onkeyup = (e)=>
+        {if(e.key == " ") resetPower();};
+    }
+
+    if(item.color == "red") //Extra Giant Ball
+    {
+        init();
+
+        finalflash.play();
+        info.textContent = "Final Flash!!!";
+        ball.color   = "gold";
+        paddle.color = "red";
+        paddle.l    += 20;
+        const interval = setInterval(()=>{
+            ball.radius+=1;
+            if(ball.radius >= 230) clearInterval(interval);   
+        },10);
+    }
+
+    if(item.color == "cyan") //Extra Ball
+    {
+        rasengan.play();
+        info.textContent = "Rasen Gan!!!";
+        ball.color = "cyan";
+        paddle.color = "red";
+        const interval = setInterval(()=>{
+            ball.radius+=1;
+            sens    = 0;
+            gravity = 0;
+            if(ball.radius >= 70) clearInterval(interval);   
+        },10);
+
+        setTimeout(()=>{resetPower()},1500);
+    }
+
+    if(item.color == "thistle") //change Scroll
+    {
+        info.textContent = "Stop the Scroll, please!";
+        gravityBrick = -gravityBrick;
+        setTimeout(()=>{info.textContent = "";},3000);
+    }
+    
+}
+
+
 
 
     /*****************************End of onload**********************/

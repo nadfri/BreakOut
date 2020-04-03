@@ -40,17 +40,16 @@ function createBricks(tab)
     }
     
 //*************************Special Bricks************************* */
-    for(let i=0; i<nLine;i+=3)
+    for(let i=0; i<nLine;i+=4)
         for (let j=0; j<nCol; j+=3)
             tab[i][j].color = "firebrick";
 
-    for(let i=0; i<nCol; i+=3)
-        tab[11][i].color = "firebrick";
 
     tab[11][1].color = "snow";
     tab[11][5].color = "snow";
     tab[14][2].color = "snow";
     tab[14][4].color = "snow";
+    tab[nLine-5][3].color = "snow";
 
     tab[3][3].color = "hotpink";
     tab[7][6].color = "hotpink";
@@ -59,11 +58,13 @@ function createBricks(tab)
         for (let j=1; j<nCol; j+=4)
          tab[i][j].color = "dimGray";
 
-    tab[5][0].color = "yellow";
-    tab[5][6].color = "yellow";
-    tab[4][3].color = "yellow";
-    tab[6][3].color = "yellow";
+    tab[5][0].color  = "yellow";
+    tab[5][6].color  = "yellow";
+    tab[4][3].color  = "yellow";
+    tab[6][3].color  = "yellow";
     tab[14][3].color = "yellow";
+    tab[nLine-4][0].color = "yellow";
+    tab[nLine-4][nCol-1].color = "yellow";
 
 
 
