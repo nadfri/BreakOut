@@ -83,6 +83,7 @@ window.onload = () =>{
     let count;
     let life = 3;
     let tabBricks = [];
+    let animation;
 
     /*01*/heartUpdate();
     /*02*/speakerControl();
@@ -90,7 +91,7 @@ window.onload = () =>{
     /*04*/createBricks(tabBricks); //Creation of bricks, see script level_xx
     /*05*/requestAnimationFrame(motion); //Animation of shape
     
-    function motion() //all frame updating here
+    function motion() //all frames are drawing here
     {
         ctx.clearRect(0, 0, canvasW, canvasH); //clear canvas
         ball.drawCircle(); //draw ball
@@ -105,20 +106,21 @@ window.onload = () =>{
   /*06*/detectPaddleCollision();
   /*07*/detectBrickCollision();
   /*08*/scrollBricks();
-  /*09*/updateAnimation();
+  /*09*/ballAnimation();
   /*10*/winOrLose();
+  /*11*/animation = requestAnimationFrame(motion);
+            
+ 
 
         if(move !== undefined) for(let line of tabBricks) for (let brick of line) moveBricks(brick);
 
     }
 
-    
-/*******************Animation Updating*************************************/
-function updateAnimation()
+/*******************Animation of the ball*************************************/
+function ballAnimation()
 {
     ball.posY += gravity
     ball.posX += sens;
-    if (!stopAnimation) requestAnimationFrame(motion); // Freeze animation
 }
 
 /*******************Function Launch Game *************************************/
@@ -130,7 +132,7 @@ function launchGame()
         {
             beginGame        = true;
             sens    		 = 2.5;
-            gravity 		 = 4;
+            gravity 		 = 15;
             music.loop       = true;
             scrollY          = true;
             info.textContent = "";
@@ -232,6 +234,8 @@ function gamePause()
         info.textContent = "***GAME IS PAUSED***";
         music.pause();          
         stopAnimation = true;
+        drawMessage("PAUSE",205);
+        cancelAnimationFrame(animation); //Freeze Animation
     }
 
     else 
@@ -239,7 +243,7 @@ function gamePause()
         music.play();
         stopAnimation = false;
         requestAnimationFrame(motion); 
-    }         
+    }          
 }   
 
 /***************Sound Control****************************************/
@@ -382,7 +386,6 @@ function detectWallCollision()
     }
 }
 
-
 /********************************Paddle Collision******************************************/
 function detectPaddleCollision()
 {
@@ -423,7 +426,6 @@ function brickStatusUpdate(brick,_sens,_gravity)
     brick.status--;
     if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
     if (brick.status == 1) brick.color = "orange";
-    
     sens    = _sens;
     gravity = _gravity
     power(brick);
@@ -431,7 +433,7 @@ function brickStatusUpdate(brick,_sens,_gravity)
 
 function detectBrickCollision()
 {
-    let marge = 7; //marge of precision ball collision
+    let marge = ball.radius; //marge of precision ball collision
     for (let line of tabBricks)
         for (let brick of line)
         {	
@@ -442,11 +444,17 @@ function detectBrickCollision()
             {
                 if(ball.posY - ball.radius <= brick.posY + brick.h 
                 && ball.posY - ball.radius >= brick.posY + brick.h - marge) //bottom side
-                    {brickStatusUpdate(brick,sens,-gravity);}
+                    {
+                        ball.posY = ball.radius + brick.posY + brick.h + 1 //out ball
+                        brickStatusUpdate(brick,sens,-gravity);
+                    }
 
                 if(ball.posY + ball.radius > brick.posY
                 && ball.posY + ball.radius < brick.posY + marge) //top side
-                    {brickStatusUpdate(brick,sens,-gravity);}
+                    {
+                        ball.posY = brick.posY - ball.radius -1;
+                        brickStatusUpdate(brick,sens,-gravity);
+                    }
             }
             //****************Brick Corner Bottom******************************************/
             if(brick.posY + brick.h >= ball.posY - ball.radius
@@ -514,8 +522,6 @@ function resetPower()
     ball.radius        = sizeBall; 
     info.textContent   = "";
     music.playbackRate = 1;
-    sens    = (sens>=0)? 2.5 : -2.5;
-    gravity = (gravity>=0)?  4 : -4;
 }
 
 function power(item)
@@ -526,7 +532,11 @@ function power(item)
         music.playbackRate = 1.4;
         ball.color = "firebrick";
         info.textContent = "Faster!!!";
-        setTimeout(()=>{resetPower()},5000);
+        setTimeout(()=>{
+            resetPower();
+            sens    = (sens>=0)? 2.5 : -2.5;
+            gravity = (gravity>=0)?  4 : -4;
+        },5000);
     }
 
     if(item.color == "snow")
@@ -536,7 +546,11 @@ function power(item)
         music.playbackRate = 0.8;
         ball.color = "snow";
         info.textContent = "Slower!!!";
-        setTimeout(()=>{resetPower()},5000);
+        setTimeout(()=>{
+            resetPower();
+            sens    = (sens>=0)? 2.5 : -2.5;
+            gravity = (gravity>=0)?  4 : -4;
+        },5000);
     }
     
     if(item.color == "chartreuse") //random sens
