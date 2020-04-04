@@ -107,8 +107,8 @@ window.onload = () =>{
   /*07*/detectBrickCollision();
   /*08*/scrollBricks();
   /*09*/ballAnimation();
-  /*10*/winOrLose();
-  /*11*/animation = requestAnimationFrame(motion);
+  /*11*/animation = requestAnimationFrame(motion); //to allow start or stop animation
+   /*10*/winOrLose();
             
  
 
@@ -119,7 +119,7 @@ window.onload = () =>{
 /*******************Animation of the ball*************************************/
 function ballAnimation()
 {
-    ball.posY += gravity
+    ball.posY += gravity;
     ball.posX += sens;
 }
 
@@ -204,7 +204,7 @@ function gameOver()
     drawMessage("GAME OVER", 100);
     music.pause();
     gameover.play();
-    stopAnimation = true;
+    cancelAnimationFrame(animation);
     info.textContent = "Press Space Bar to play again";
 
     document.onkeypress = (e) => {
@@ -218,7 +218,7 @@ function victory()
     drawMessage("VICTORY!", 150);   
     music.pause();
     win.play();
-    stopAnimation = true;	
+    cancelAnimationFrame(animation);
 
     setInterval( ()=>{info.textContent = "Press Space Bar to unlock the Next Level";}
     ,1000); //TODO: clear all setTimeOut()
@@ -247,20 +247,6 @@ function gamePause()
 }   
 
 /***************Sound Control****************************************/
-function speakerControl()
-{
-    speaker.onclick = () =>{mute();}
-
-    let getStorage  = localStorage.getItem('saveMute'); //verify if data in storage
-    soundActive = (getStorage != null)? getStorage : 1;
-
-    if(soundActive == 0)
-    {
-        soundActive = 1;
-        mute();
-    }
-}
-
 function mute()
 {
     if(soundActive == 1)
@@ -280,6 +266,20 @@ function mute()
     localStorage.setItem("saveMute", soundActive); //save data sound
 }
 
+function speakerControl()
+{
+    speaker.onclick = () =>{mute();}
+
+    let getStorage  = localStorage.getItem('saveMute'); //verify if data in storage
+    soundActive = (getStorage != null)? getStorage : 1;
+
+    if(soundActive == 0)
+    {
+        soundActive = 1;
+        mute();
+    }
+}
+
 /********************************Motion Paddle***************************************/
 function paddleControl()
 {
@@ -295,7 +295,6 @@ function paddleControl()
     
     if(paddleRight && paddle.posX < canvasW-paddle.l) paddle.posX+= paddleSpeed;
     if(paddleLeft  && paddle.posX > 0)                paddle.posX-= paddleSpeed; 
-
 }
 
 /************************Functions to draw Bricks*********************/
@@ -463,6 +462,7 @@ function detectBrickCollision()
                 if(brick.posX >= ball.posX
                 && brick.posX <= ball.posX + ball.radius) //left Bottom
                 {
+                    ball.posY = ball.radius + brick.posY + brick.h + 1 //out ball
                     brickStatusUpdate(brick,sens,-gravity);
                     //gravity = Math.abs(gravity);
                     //sens    = (sens>0)? -sens : sens;
@@ -471,6 +471,7 @@ function detectBrickCollision()
            else if(brick.posX + brick.l >= ball.posX - ball.radius
                 && brick.posX + brick.l <= ball.posX) //Right Bottom
                 {
+                    ball.posY = ball.radius + brick.posY + brick.h + 1 //out ball
                     brickStatusUpdate(brick,sens,-gravity);
                     //gravity = Math.abs(gravity);
                     //sens    = (sens<0)? -sens : sens;
@@ -483,6 +484,7 @@ function detectBrickCollision()
                 if(brick.posX  >= ball.posX
                 && brick.posX  <= ball.posX + ball.radius) //Left Top
                 {
+                    ball.posY = brick.posY - ball.radius -1;
                     brickStatusUpdate(brick,sens,-gravity);                
                     //gravity = -Math.abs(gravity);
                     //sens    = (sens>0)? -sens : sens;
@@ -491,6 +493,7 @@ function detectBrickCollision()
            else if(brick.posX + brick.l >= ball.posX - ball.radius
                 && brick.posX + brick.l <= ball.posX) //Right Top
                 {
+                    ball.posY = brick.posY - ball.radius -1;
                     brickStatusUpdate(brick,sens,-gravity);                  
                     //gravity = -Math.abs(gravity);
                     //sens    = (sens<0)? -sens : sens;
