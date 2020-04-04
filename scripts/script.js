@@ -1,6 +1,4 @@
 /******************Declaration of Global Variables**********************/
-
-/************************Class Shape*******************************/
 class Shape
 {
     constructor (posX,posY,l,h,radius,color)
@@ -10,7 +8,7 @@ class Shape
         this.l = l;
         this.h = h;
         this.radius = radius;
-        this.color = color;
+        this.color  = color;
         this.stroke = "#282828";
     }
 
@@ -20,6 +18,8 @@ class Shape
         ctx.arc(this.posX,this.posY,this.radius,0, Math.PI*2);
         ctx.fillStyle = this.color;
         ctx.fill();
+        ctx.strokeStyle = "maroon";
+        ctx.stroke();
     }
 
     drawRect()
@@ -31,19 +31,6 @@ class Shape
         ctx.strokeStyle = this.stroke;
         ctx.stroke();
     }
-
-    control()
-    {
-        document.onkeydown = (e) =>{
-             if     (e.key == "ArrowRight") right = true; 
-             else if(e.key == "ArrowLeft" ) left  = true;
-        };
-
-        document.onkeyup = (e) =>{
-            if     (e.key == "ArrowRight") right = false;
-            else if(e.key == "ArrowLeft" ) left  = false;
-           };
-    }
 }
 
 const myCanvas = document.getElementById("myCanvas");
@@ -51,15 +38,14 @@ const canvasH  = myCanvas.height = 500;
 const canvasW  = myCanvas.width  = 700;
 const ctx      = myCanvas.getContext("2d");
 
-let right         = false;
-let left          = false;
+let paddleRight   = false;
+let paddleLeft    = false;
 let stopAnimation = false;
 let beginGame     = false; //to avoid space bar function
 let move;                  // allow brick moving
 let scrollY       = false;
 
-
-let music      = new Audio("sounds/tetris.mp3");
+let music         = new Audio("sounds/tetris.mp3");
 let soundActive;
 
 /*****************************Start of onload***************************/
@@ -110,268 +96,27 @@ window.onload = () =>{
         ctx.clearRect(0, 0, canvasW, canvasH); //clear canvas
         ball.drawCircle(); //draw ball
         paddle.drawRect(); //draw paddle
-        paddle.control();  //launch paddle control
         count = nLine*nCol;//number of bricks
 
-        if(beginGame == false) init(); //init before to play
+        /*01*/if(beginGame == false) init(); //init before to play
         
-
         /****************Draw Updating**************************************/
-
-        for(let line of tabBricks) //Count of bricks destroyed
-            for (let brick of line)
-                if (brick.status == 0)
-                    count--;
-
-
-        for(let line of tabBricks)  //Draw rest of bricks
-            for (let brick of line)
-                if (brick.status > 0 && count > 1)
-                    brick.drawRect();
-                
-                else if (brick.status > 0 && count == 1) //last brick bigger
-                {
-                    brick.l = 125;
-                    brick.color = "green";
-                    brick.drawRect();
-                }
-
-        if(move !=undefined) //scroll of bricks
-        {            
-            for(let line of tabBricks) 
-                for (let brick of line)
-                {
-                    if (brick.posY + brick.h >= canvasH - paddle.h && brick.status>0) //ground
-                    {
-                        gravityBrick = -gravityBrick;
-                        losingLife();
-                        break;
-                    }
-            
-                    else if (brick.posY <= 0 && brick.status !=0) //roof
-                    {
-                        gravityBrick = -gravityBrick;
-                        break;
-                    }
+        /*02*/paddleControl();
+        /*03*/updateNumberOfBricks();
+        /*04*/updateDrawBricks();
+        /*05*/detectWallCollision();
+        /*06*/detectPaddleCollision();
+        /*07*/detectBrickCollision();
 
 
-                    if (brick.posX <= 0 && brick.status !=0) //left side
-                    {   
-                        sensBrick = -sensBrick;
-                        break;
-                    } 
+        /*XX*/scrollBricks();
 
-
-                    else if (brick.posX + brick.l >= canvasW && brick.status !=0) //right
-                    {   
-                        sensBrick = -sensBrick;
-                        break;
-                    }
-
-                }
-        }
-            
         if(move !== undefined) for(let line of tabBricks) for (let brick of line) moveBricks(brick);
 
-        function moveBricks(brick)
-        {
-            brick.posX += sensBrick;
-            if(scrollY == true)
-            brick.posY -= gravityBrick;
-        }
-        
         if (count == 0)  victory();
         if (life  == 0)  gameOver();
     
-        /********************************Motion Paddle***************************************/
-        if(right && paddle.posX < canvasW-paddle.l) paddle.posX+= paddleSpeed;
-        if(left  && paddle.posX > 0)                paddle.posX-= paddleSpeed;
-      
-        /********************************Wall Collision************************************/
-        if(ball.posY - ball.radius <= 0) //roof
-        {
-            gravity   = -gravity; 
-            ball.posY = ball.radius +1;
-        }
-    
-        if(ball.posX - ball.radius <= 0 ) //wall left
-        {	
-            sens      = -sens; 
-            ball.posX = ball.radius +1;
-        }
-    
-        if(ball.posX + ball.radius >= canvasW) //wall right
-        {
-            sens      = -sens;
-            ball.posX = canvasW - ball.radius -1;
-        }
-    
-        if (ball.posY + ball.radius >= canvasH) losingLife();//Game lost
 
-        /********************************Paddle Collision******************************************/
-        if(ball.posX > paddle.posX 
-        && ball.posX < paddle.posX + paddle.l) //ball between paddle limits in X
-            if(ball.posY + ball.radius >= paddle.posY 
-            && ball.posY < canvasH) //ball between paddle limitis in Y
-            {
-                gravity   = -gravity;
-                ball.posY = paddle.posY - ball.radius -1 //out ball from paddle
-    
-                if     (right) sens = +Math.abs(sens); 	
-                else if(left)  sens = -Math.abs(sens); 
-            }
-        //******************************Paddle Corner Collision*************************************/
-        if(paddle.posY >= ball.posY 
-        && paddle.posY <= ball.posY + ball.radius) //ball in Top Corner	
-    
-            if(paddle.posX  >= ball.posX
-            && paddle.posX  <= ball.posX + ball.radius) //Left Corner
-            {
-                gravity = -Math.abs(gravity);
-                sens    = (sens>0)? -sens : sens;
-            }
-       
-        else if(paddle.posX + paddle.l >= ball.posX - ball.radius
-             && paddle.posX + paddle.l <= ball.posX) //Right Corner
-            {
-                gravity = -Math.abs(gravity);
-                sens    = (sens<0)? -sens : sens;
-            }
-    
-        /*********************************Brick Collision*******************************************/
-        for (let line of tabBricks)
-            for (let brick of line)
-            {	
-                let marge = 7;
-        //********************************Brick Horizontal Side*************************************/
-                if(ball.posX    > brick.posX 
-                && ball.posX    < brick.posX + brick.l 
-                && brick.status > 0) //ball between brick
-                {
-                    if(ball.posY - ball.radius <= brick.posY + brick.h 
-                    && ball.posY - ball.radius >= brick.posY + brick.h - marge) //bottom side
-                    {
-                        brick.status--;
-                        if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
-                        if (brick.status == 1) brick.color = "orange";
-
-                        power(brick);
-                        broken.play(); 	
-
-                        gravity =- gravity;
-                    }
-    
-    
-                    if(ball.posY + ball.radius > brick.posY
-                    && ball.posY + ball.radius < brick.posY + marge) //top side
-                    {
-                        brick.status--;
-                        if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
-                        if (brick.status == 1) brick.color = "orange";
-
-                        power(brick);
-                        broken.play();	
-
-                        gravity =- gravity;
-                    }
-                }
-                //****************Brick Corner Bottom******************************************/
-                if(brick.posY + brick.h >= ball.posY - ball.radius
-                && brick.posY + brick.h <= ball.posY && brick.status > 0) 
-    
-                    if(brick.posX >= ball.posX
-                    && brick.posX <= ball.posX + ball.radius) //left Bottom
-                    {
-                        brick.status--;
-                        if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
-                        if (brick.status == 1) brick.color = "orange";
-
-                        power(brick);
-                        broken.play();
-
-                        gravity = Math.abs(gravity);
-                        sens    = (sens>0)? -sens : sens;
-                    }
-                
-                //****************Brick Corner Right Bottoms*************************************/
-                else if(brick.posX + brick.l >= ball.posX - ball.radius
-                    && brick.posX + brick.l <= ball.posX) //Right Bottom
-                    {
-                        brick.status--;
-                        if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
-                        if (brick.status == 1) brick.color = "orange";
-
-                        power(brick);
-                        broken.play();
-
-                        gravity = Math.abs(gravity);
-                        sens    = (sens<0)? -sens : sens;
-                    }
-                    
-                //******************Brick Corner Top*********************************************/
-                if(brick.posY >= ball.posY 
-                && brick.posY <= ball.posY + ball.radius && brick.status > 0) //ball in Top Corner
-    
-                    if(brick.posX  >= ball.posX
-                    && brick.posX  <= ball.posX + ball.radius) //Left Top
-                    {
-                        brick.status--;
-                        if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
-                        if (brick.status == 1) brick.color = "orange";
-
-                        power(brick);
-                        broken.play();
-
-                        gravity = -Math.abs(gravity);
-                        sens    = (sens>0)? -sens : sens;
-                    }
-                    
-                else if(brick.posX + brick.l >= ball.posX - ball.radius
-                    && brick.posX + brick.l <= ball.posX) //Right Top
-                    {
-                        brick.status--;
-                        if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
-                        if (brick.status == 1) brick.color = "orange";
-
-                        power(brick);
-                        broken.play();
-
-                        gravity = -Math.abs(gravity);
-                        sens    = (sens<0)? -sens : sens;
-                    } 
-    
-                //***************Brick Vertical Sides*******************************************/
-                if(ball.posY > brick.posY 
-                && ball.posY < brick.posY + brick.h && brick.status > 0) //ball between brick.h
-                {
-                    if(ball.posX + ball.radius >= brick.posX 
-                    && ball.posX + ball.radius < brick.posX +marge) //left brick side
-                    {
-                        brick.status--;
-                        if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
-                        if (brick.status == 1) brick.color = "orange";
-
-                        power(brick);
-                        broken.play();
-
-                        sens = -sens;
-                    }
-    
-                    else if(ball.posX - ball.radius <= brick.posX + brick.l 
-                         && ball.posX - ball.radius >  brick.posX + brick.l-marge) //right side
-                    {
-                        brick.status--;
-                        if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
-                        if (brick.status == 1) brick.color = "orange";
-
-                        power(brick);
-                        broken.play();
-
-                        sens = -sens;
-                    }
-                } 
-            }
-    
         /*************Final Action************************/
         ball.posY += gravity
         ball.posX += sens;
@@ -399,8 +144,7 @@ function launchGame()
         }
 
         if(e.key == "Enter") document.location = "./index.html";//press enter to go to menu
-
-        if(e.keyCode == 112 ) gamePause();
+        if(e.keyCode == 112 ) gamePause(); //Game paused by press on "p"
     };
 }
 
@@ -426,7 +170,7 @@ function losingLife()
 {
     lost.play();
     life--;
-    heartUpdate()
+    heartUpdate();
 
     beginGame = false;
     init();
@@ -453,11 +197,9 @@ function drawMessage(text,posX)
 function gameOver()
 {
     drawMessage("GAME OVER", 100);
-
     music.pause();
     gameover.play();
     stopAnimation = true;
-
     info.textContent = "Press Space Bar to play again";
 
     document.onkeypress = (e) => {
@@ -469,8 +211,7 @@ function gameOver()
 /***********************************Function Victory***************/
 function victory()
 {
-    drawMessage("VICTORY!", 150);
-        
+    drawMessage("VICTORY!", 150);   
     music.pause();
     win.play();
     stopAnimation = true;	
@@ -534,6 +275,240 @@ function mute()
     localStorage.setItem("saveMute", soundActive); //save data sound
 }
 
+/********************************Motion Paddle***************************************/
+function paddleControl()
+{
+    document.onkeydown = (e) =>{
+        if(e.key == "ArrowRight") paddleRight = true; 
+        if(e.key == "ArrowLeft" ) paddleLeft  = true;
+    };
+
+    document.onkeyup = (e) =>{
+        if(e.key == "ArrowRight") paddleRight = false;
+        if(e.key == "ArrowLeft" ) paddleLeft  = false;
+    };
+    
+    if(paddleRight && paddle.posX < canvasW-paddle.l) paddle.posX+= paddleSpeed;
+    if(paddleLeft  && paddle.posX > 0)                paddle.posX-= paddleSpeed; 
+
+}
+
+/************************Functions to draw Bricks*********************/
+function updateNumberOfBricks()
+{
+    for(let line of tabBricks) //Count of bricks destroyed
+        for (let brick of line) if (brick.status == 0) count--;
+}
+
+function updateDrawBricks()
+{       
+    for(let line of tabBricks)  //Draw rest of bricks
+        for (let brick of line)
+            if (brick.status > 0 && count > 1)
+                brick.drawRect();
+            
+            else if (brick.status > 0 && count == 1) //last brick bigger
+            {
+                brick.l = 125;
+                brick.color = "green";
+                brick.drawRect();
+            }
+}
+
+function scrollBricks()
+{ 
+    if(move !=undefined) //scroll of bricks
+    {            
+        for(let line of tabBricks) 
+            for (let brick of line)
+            {
+                if (brick.posY + brick.h >= canvasH - paddle.h && brick.status>0) //ground
+                {
+                    gravityBrick = -gravityBrick;
+                    losingLife();
+                    break;
+                }
+        
+                else if (brick.posY <= 0 && brick.status !=0) //roof
+                {
+                    gravityBrick = -gravityBrick;
+                    break;
+                }
+
+
+                if (brick.posX <= 0 && brick.status !=0) //left side
+                {   
+                    sensBrick = -sensBrick;
+                    break;
+                } 
+
+
+                else if (brick.posX + brick.l >= canvasW && brick.status !=0) //right
+                {   
+                    sensBrick = -sensBrick;
+                    break;
+                }
+            }
+    }
+}
+
+function moveBricks(brick)
+{
+    brick.posX += sensBrick;
+    if(scrollY == true)
+    brick.posY -= gravityBrick;
+}
+
+/********************************Wall Collision************************************/
+function detectWallCollision()
+{
+    if (ball.posY + ball.radius >= canvasH) losingLife();//Game lost
+
+    if(ball.posY - ball.radius <= 0) //roof
+    {
+        gravity   = -gravity; 
+        ball.posY = ball.radius +1;
+    }
+
+    if(ball.posX - ball.radius <= 0 ) //wall left
+    {	
+        sens      = -sens; 
+        ball.posX = ball.radius +1;
+    }
+
+    if(ball.posX + ball.radius >= canvasW) //wall right
+    {
+        sens      = -sens;
+        ball.posX = canvasW - ball.radius -1;
+    }
+}
+
+
+/********************************Paddle Collision******************************************/
+function detectPaddleCollision()
+{
+    if(ball.posX > paddle.posX 
+    && ball.posX < paddle.posX + paddle.l) //ball between paddle limits in X
+        if(ball.posY + ball.radius >= paddle.posY 
+        && ball.posY < canvasH) //ball between paddle limitis in Y
+        {
+            gravity   = -gravity;
+            ball.posY = paddle.posY - ball.radius -1 //out ball from paddle
+
+            if(paddleRight) sens = +Math.abs(sens); 	//change sens of ball
+            if(paddleLeft)  sens = -Math.abs(sens); 
+        }
+    //******************************Paddle Corner Collision*************************************/
+    if(paddle.posY >= ball.posY 
+    && paddle.posY <= ball.posY + ball.radius) //ball in Top Corner	
+
+        if(paddle.posX  >= ball.posX
+        && paddle.posX  <= ball.posX + ball.radius) //Left Corner
+        {
+            gravity = -Math.abs(gravity);
+            sens    = (sens>0)? -sens : sens;
+        }
+
+    else if(paddle.posX + paddle.l >= ball.posX - ball.radius
+        && paddle.posX + paddle.l <= ball.posX) //Right Corner
+        {
+            gravity = -Math.abs(gravity);
+            sens    = (sens<0)? -sens : sens;
+        }
+}
+
+/*********************************Brick Collision*******************************************/
+function brickStatusUpdate(brick,_sens,_gravity)
+{
+    broken.play();
+    brick.status--;
+    if (brick.status == 2) brick.color = "rgba(255,165,0,0.5)";
+    if (brick.status == 1) brick.color = "orange";
+    
+    sens    = _sens;
+    gravity = _gravity
+    power(brick);
+}
+
+function detectBrickCollision()
+{
+    let marge = 7; //marge of precision ball collision
+    for (let line of tabBricks)
+        for (let brick of line)
+        {	
+            //********************Brick Horizontal Side*************************************/
+            if(ball.posX    > brick.posX 
+            && ball.posX    < brick.posX + brick.l 
+            && brick.status > 0) //ball between brick
+            {
+                if(ball.posY - ball.radius <= brick.posY + brick.h 
+                && ball.posY - ball.radius >= brick.posY + brick.h - marge) //bottom side
+                {brickStatusUpdate(brick,sens,-gravity);}
+
+                if(ball.posY + ball.radius > brick.posY
+                && ball.posY + ball.radius < brick.posY + marge) //top side
+                {brickStatusUpdate(brick,sens,-gravity);}
+            }
+            //****************Brick Corner Bottom******************************************/
+            if(brick.posY + brick.h >= ball.posY - ball.radius
+            && brick.posY + brick.h <= ball.posY && brick.status > 0) 
+
+                if(brick.posX >= ball.posX
+                && brick.posX <= ball.posX + ball.radius) //left Bottom
+                {
+                    brickStatusUpdate(brick,sens,-gravity);
+                    //gravity = Math.abs(gravity);
+                    //sens    = (sens>0)? -sens : sens;
+                }
+            
+            else if(brick.posX + brick.l >= ball.posX - ball.radius
+                && brick.posX + brick.l <= ball.posX) //Right Bottom
+                {
+                    brickStatusUpdate(brick,sens,-gravity);
+                    //gravity = Math.abs(gravity);
+                    //sens    = (sens<0)? -sens : sens;
+                }
+                
+            //******************Brick Corner Top*********************************************/
+            if(brick.posY >= ball.posY 
+            && brick.posY <= ball.posY + ball.radius && brick.status > 0) //ball in Top Corner
+
+                if(brick.posX  >= ball.posX
+                && brick.posX  <= ball.posX + ball.radius) //Left Top
+                {
+                    brickStatusUpdate(brick,sens,-gravity);                
+                    //gravity = -Math.abs(gravity);
+                    //sens    = (sens>0)? -sens : sens;
+                }
+                
+            else if(brick.posX + brick.l >= ball.posX - ball.radius
+                && brick.posX + brick.l <= ball.posX) //Right Top
+                {
+                    brickStatusUpdate(brick,sens,-gravity);                  
+                    //gravity = -Math.abs(gravity);
+                    //sens    = (sens<0)? -sens : sens;
+                } 
+
+            //***************Brick Vertical Sides*******************************************/
+            if(ball.posY > brick.posY 
+            && ball.posY < brick.posY + brick.h && brick.status > 0) //ball between brick.h
+            {
+                if(ball.posX + ball.radius >= brick.posX 
+                && ball.posX + ball.radius < brick.posX +marge) //left brick side
+                {
+                    brickStatusUpdate(brick,-sens,gravity);                   
+                }
+
+                else if(ball.posX - ball.radius <= brick.posX + brick.l 
+                        && ball.posX - ball.radius >  brick.posX + brick.l-marge) //right side
+                {
+                    brickStatusUpdate(brick,-sens,gravity);              
+                }
+            } 
+        }
+}
+
+
 /************************************Function Bricks Powers***********************/
 function resetPower()
 {
@@ -550,7 +525,7 @@ function resetPower()
 }
 
 function power(item)
-{
+{ 
     if(item.color == "firebrick")
     {
         sens = (sens>=0)? 8 : -8; //ball faster
@@ -579,7 +554,7 @@ function power(item)
 
         setTimeout( ()=>{
             random.play();
-            sens    = (Math.random()*7+1)*Math.pow(-1,Math.random().toFixed(1)*10);
+            sens    = (Math.random()*6+1)*Math.pow(-1,Math.random().toFixed(1)*10);
             gravity = 4;
             ball.color = "red";
             info.textContent= "";
@@ -696,6 +671,7 @@ function power(item)
     }
     
 }
+
 
 
 

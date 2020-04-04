@@ -54,15 +54,15 @@ function createBricks(tab)
     tab[3][3].color = "hotpink";
     tab[7][6].color = "hotpink";
 
-    for(let i=1; i<nLine-1;i+=4)
-        for (let j=1; j<nCol; j+=4)
-         tab[i][j].color = "dimGray";
+    tab[nLine-1][0].color = "dimGray";
+    tab[nLine-1][nCol-1].color = "dimGray";
+    tab[7][1].color = "dimGray";
+    tab[7][nCol-2].color = "dimGray";
+    tab[1][3].color = "dimGray";
+
 
     tab[5][0].color  = "yellow";
     tab[5][6].color  = "yellow";
-    tab[4][3].color  = "yellow";
-    tab[6][3].color  = "yellow";
-    tab[14][3].color = "yellow";
     tab[nLine-4][0].color = "yellow";
     tab[nLine-4][nCol-1].color = "yellow";
 
