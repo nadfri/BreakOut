@@ -85,47 +85,41 @@ window.onload = () =>{
     let tabBricks = [];
 
     /*01*/heartUpdate();
-    /*02*/speakerControl()
+    /*02*/speakerControl();
     /*03*/launchGame();
     /*04*/createBricks(tabBricks); //Creation of bricks, see script level_xx
     /*05*/requestAnimationFrame(motion); //Animation of shape
     
-    function motion()
+    function motion() //all frame updating here
     {
-        /******************Draw Shape***************************************/
         ctx.clearRect(0, 0, canvasW, canvasH); //clear canvas
         ball.drawCircle(); //draw ball
         paddle.drawRect(); //draw paddle
         count = nLine*nCol;//number of bricks
 
-        /*01*/if(beginGame == false) init(); //init before to play
-        
-        /****************Draw Updating**************************************/
-        /*02*/paddleControl();
-        /*03*/updateNumberOfBricks();
-        /*04*/updateDrawBricks();
-        /*05*/detectWallCollision();
-        /*06*/detectPaddleCollision();
-        /*07*/detectBrickCollision();
-
-
-        /*XX*/scrollBricks();
+  /*01*/init(); //init before to play
+  /*02*/paddleControl();
+  /*03*/updateNumberOfBricks();
+  /*04*/updateDrawBricks();
+  /*05*/detectWallCollision();
+  /*06*/detectPaddleCollision();
+  /*07*/detectBrickCollision();
+  /*08*/scrollBricks();
+  /*09*/updateAnimation();
+  /*10*/winOrLose();
 
         if(move !== undefined) for(let line of tabBricks) for (let brick of line) moveBricks(brick);
 
-        if (count == 0)  victory();
-        if (life  == 0)  gameOver();
-    
-
-        /*************Final Action************************/
-        ball.posY += gravity
-        ball.posX += sens;
-        /*************************************************/
-        
- 
-        if (!stopAnimation) requestAnimationFrame(motion); // Freeze animation
     }
 
+    
+/*******************Animation Updating*************************************/
+function updateAnimation()
+{
+    ball.posY += gravity
+    ball.posX += sens;
+    if (!stopAnimation) requestAnimationFrame(motion); // Freeze animation
+}
 
 /*******************Function Launch Game *************************************/
 function launchGame()
@@ -151,14 +145,17 @@ function launchGame()
 /*******************Function initialize*******************************/
 function init()
 {
-    ball.posX = paddle.posX+paddle.l/2;
-    ball.posY = paddle.posY-ball.radius;
-    gravity = 0;
-    sens    = 0;
-    info.textContent = "Press Space Bar to launch the Ball";
+    if(beginGame == false)
+    {
+        ball.posX = paddle.posX+paddle.l/2;
+        ball.posY = paddle.posY-ball.radius;
+        gravity = 0;
+        sens    = 0;
+        info.textContent = "Press Space Bar to launch the Ball";
+    }
 }
 
-/***********************************Diplay of life***************/
+/***********************************Display of life***************/
 function heartUpdate()
 {
     heart.textContent = "";
@@ -176,7 +173,7 @@ function losingLife()
     init();
 }
 
-/***********************************Draw message after Lost/win***************/
+/***********************************Draw message**************************/
 function drawMessage(text,posX)
 {
     ctx.beginPath();
@@ -193,7 +190,13 @@ function drawMessage(text,posX)
     ctx.strokeText(text,posX,canvasH/2+30);
 }
 
-/***********************************Function Game Over***************/
+/***********************************Function Win/Lose****************************/
+function winOrLose()
+{        
+    if (count == 0)  victory();
+    if (life  == 0)  gameOver();
+}
+
 function gameOver()
 {
     drawMessage("GAME OVER", 100);
@@ -208,7 +211,6 @@ function gameOver()
     };
 }
 
-/***********************************Function Victory***************/
 function victory()
 {
     drawMessage("VICTORY!", 150);   
@@ -237,8 +239,7 @@ function gamePause()
         music.play();
         stopAnimation = false;
         requestAnimationFrame(motion); 
-    }
-            
+    }         
 }   
 
 /***************Sound Control****************************************/
@@ -329,12 +330,11 @@ function scrollBricks()
                     break;
                 }
         
-                else if (brick.posY <= 0 && brick.status !=0) //roof
+                if (brick.posY <= 0 && brick.status !=0) //roof
                 {
                     gravityBrick = -gravityBrick;
                     break;
                 }
-
 
                 if (brick.posX <= 0 && brick.status !=0) //left side
                 {   
@@ -342,8 +342,7 @@ function scrollBricks()
                     break;
                 } 
 
-
-                else if (brick.posX + brick.l >= canvasW && brick.status !=0) //right
+                if (brick.posX + brick.l >= canvasW && brick.status !=0) //right
                 {   
                     sensBrick = -sensBrick;
                     break;
@@ -362,7 +361,7 @@ function moveBricks(brick)
 /********************************Wall Collision************************************/
 function detectWallCollision()
 {
-    if (ball.posY + ball.radius >= canvasH) losingLife();//Game lost
+    if(ball.posY + ball.radius >= canvasH) losingLife();//Game lost
 
     if(ball.posY - ball.radius <= 0) //roof
     {
@@ -443,11 +442,11 @@ function detectBrickCollision()
             {
                 if(ball.posY - ball.radius <= brick.posY + brick.h 
                 && ball.posY - ball.radius >= brick.posY + brick.h - marge) //bottom side
-                {brickStatusUpdate(brick,sens,-gravity);}
+                    {brickStatusUpdate(brick,sens,-gravity);}
 
                 if(ball.posY + ball.radius > brick.posY
                 && ball.posY + ball.radius < brick.posY + marge) //top side
-                {brickStatusUpdate(brick,sens,-gravity);}
+                    {brickStatusUpdate(brick,sens,-gravity);}
             }
             //****************Brick Corner Bottom******************************************/
             if(brick.posY + brick.h >= ball.posY - ball.radius
@@ -461,7 +460,7 @@ function detectBrickCollision()
                     //sens    = (sens>0)? -sens : sens;
                 }
             
-            else if(brick.posX + brick.l >= ball.posX - ball.radius
+           else if(brick.posX + brick.l >= ball.posX - ball.radius
                 && brick.posX + brick.l <= ball.posX) //Right Bottom
                 {
                     brickStatusUpdate(brick,sens,-gravity);
@@ -481,7 +480,7 @@ function detectBrickCollision()
                     //sens    = (sens>0)? -sens : sens;
                 }
                 
-            else if(brick.posX + brick.l >= ball.posX - ball.radius
+           else if(brick.posX + brick.l >= ball.posX - ball.radius
                 && brick.posX + brick.l <= ball.posX) //Right Top
                 {
                     brickStatusUpdate(brick,sens,-gravity);                  
@@ -495,25 +494,20 @@ function detectBrickCollision()
             {
                 if(ball.posX + ball.radius >= brick.posX 
                 && ball.posX + ball.radius < brick.posX +marge) //left brick side
-                {
-                    brickStatusUpdate(brick,-sens,gravity);                   
-                }
+                    {brickStatusUpdate(brick,-sens,gravity);}
 
-                else if(ball.posX - ball.radius <= brick.posX + brick.l 
-                        && ball.posX - ball.radius >  brick.posX + brick.l-marge) //right side
-                {
-                    brickStatusUpdate(brick,-sens,gravity);              
-                }
+                if(ball.posX - ball.radius <= brick.posX + brick.l 
+                && ball.posX - ball.radius >  brick.posX + brick.l-marge) //right side
+                    {brickStatusUpdate(brick,-sens,gravity);}
             } 
         }
 }
-
 
 /************************************Function Bricks Powers***********************/
 function resetPower()
 {
     if(paddle.color != "yellow" || paddle.color != "dimGray")
-       paddle.color  = "blue";
+      {paddle.color  = "blue";}
 
     paddleSpeed        = 10;
     ball.color         = "red";
@@ -659,7 +653,6 @@ function power(item)
             gravity = 0;
             if(ball.radius >= 70) clearInterval(interval);   
         },10);
-
         setTimeout(()=>{resetPower()},1500);
     }
 
