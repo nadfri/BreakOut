@@ -107,8 +107,8 @@ window.onload = () =>{
   /*07*/detectBrickCollision();
   /*08*/scrollBricks();
   /*09*/ballAnimation();
-  /*11*/animation = requestAnimationFrame(motion); //to allow start or stop animation
-   /*10*/winOrLose();
+  /*10*/animation = requestAnimationFrame(motion); //to allow start or stop animation
+  /*11*/winOrLose(); //stop animation 
             
  
 
@@ -132,7 +132,7 @@ function launchGame()
         {
             beginGame        = true;
             sens    		 = 2.5;
-            gravity 		 = 15;
+            gravity 		 = 4;
             music.loop       = true;
             scrollY          = true;
             info.textContent = "";
@@ -170,7 +170,6 @@ function losingLife()
     lost.play();
     life--;
     heartUpdate();
-
     beginGame = false;
     init();
 }
@@ -505,11 +504,17 @@ function detectBrickCollision()
             {
                 if(ball.posX + ball.radius >= brick.posX 
                 && ball.posX + ball.radius < brick.posX +marge) //left brick side
-                    {brickStatusUpdate(brick,-sens,gravity);}
+                    {
+                        ball.posX = brick.posX - ball.radius -1;
+                        brickStatusUpdate(brick,-sens,gravity);
+                    }
 
-                if(ball.posX - ball.radius <= brick.posX + brick.l 
+                if(ball.posX - ball.radius <= brick.posX + brick.l //out ball of brick
                 && ball.posX - ball.radius >  brick.posX + brick.l-marge) //right side
-                    {brickStatusUpdate(brick,-sens,gravity);}
+                    {
+                        ball.posX = brick.posX + brick.l + ball.radius +1; //out ball of brick
+                        brickStatusUpdate(brick,-sens,gravity);
+                    }
             } 
         }
 }
@@ -531,7 +536,7 @@ function power(item)
 { 
     if(item.color == "firebrick")
     {
-        sens = (sens>=0)? 8 : -8; //ball faster
+        sens = (sens>=0)? 6 : -6; //ball faster
         music.playbackRate = 1.4;
         ball.color = "firebrick";
         info.textContent = "Faster!!!";
@@ -565,7 +570,7 @@ function power(item)
 
         setTimeout( ()=>{
             random.play();
-            sens    = (Math.random()*6+1)*Math.pow(-1,Math.random().toFixed(1)*10);
+            sens    = (Math.random()*5+1)*Math.pow(-1,Math.random().toFixed(1)*10);
             gravity = 4;
             ball.color = "red";
             info.textContent= "";
