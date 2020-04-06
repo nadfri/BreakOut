@@ -42,8 +42,6 @@ let paddleRight   = false;
 let paddleLeft    = false;
 let stopAnimation = false;
 let beginGame     = false; //to avoid space bar function
-let move;                  // allow brick moving
-let scrollY       = false;
 
 let music         = new Audio("sounds/tetris.mp3");
 let soundActive;
@@ -84,6 +82,7 @@ window.onload = () =>{
     let life = 3;
     let tabBricks = [];
     let animation;
+    let beginScrollY;
 
     /*01*/heartUpdate();
     /*02*/speakerControl();
@@ -98,21 +97,18 @@ window.onload = () =>{
         paddle.drawRect(); //draw paddle
         count = nLine*nCol;//number of bricks
 
-  /*01*/init(); //init before to play
-  /*02*/paddleControl();
-  /*03*/updateNumberOfBricks();
-  /*04*/updateDrawBricks();
-  /*05*/detectWallCollision();
-  /*06*/detectPaddleCollision();
-  /*07*/detectBrickCollision();
-  /*08*/scrollBricks();
-  /*09*/ballAnimation();
-  /*10*/animation = requestAnimationFrame(motion); //to allow start or stop animation
-  /*11*/winOrLose(); //stop animation 
+  /*01*/init();                 //init values before to play
+  /*02*/paddleControl();        //launch control functions
+  /*03*/updateNumberOfBricks(); //count of bricks not yet destroyed
+  /*04*/updateDrawBricks();     //draw rest of bricks
+  /*05*/detectWallCollision();  //detection wall collision with ball
+  /*06*/detectPaddleCollision();//detection paddle collision with ball
+  /*07*/detectBrickCollision(); //detection brick collision with ball
+  /*08*/bricksAnimation();      //launch scroll animation of bricks
+  /*09*/ballAnimation();        //launch ball animation
+  /*10*/animation = requestAnimationFrame(motion); //allow start animation
+  /*11*/winOrLose();            //Allow replay or next Level
             
- 
-
-        if(move !== undefined) for(let line of tabBricks) for (let brick of line) moveBricks(brick);
 
     }
 
@@ -131,10 +127,10 @@ function launchGame()
         if(e.key == " " && beginGame == false) //launch by press bar space
         {
             beginGame        = true;
+            beginScrollY     = true;
             sens    		 = 2.5;
             gravity 		 = 4;
             music.loop       = true;
-            scrollY          = true;
             info.textContent = "";
             music.play();
         }
@@ -318,48 +314,8 @@ function updateDrawBricks()
             }
 }
 
-function scrollBricks()
-{ 
-    if(move !=undefined) //scroll of bricks
-    {            
-        for(let line of tabBricks) 
-            for (let brick of line)
-            {
-                if (brick.posY + brick.h >= canvasH - paddle.h && brick.status>0) //ground
-                {
-                    gravityBrick = -gravityBrick;
-                    losingLife();
-                    break;
-                }
+
         
-                if (brick.posY <= 0 && brick.status !=0) //roof
-                {
-                    gravityBrick = -gravityBrick;
-                    break;
-                }
-
-                if (brick.posX <= 0 && brick.status !=0) //left side
-                {   
-                    sensBrick = -sensBrick;
-                    break;
-                } 
-
-                if (brick.posX + brick.l >= canvasW && brick.status !=0) //right
-                {   
-                    sensBrick = -sensBrick;
-                    break;
-                }
-            }
-    }
-}
-
-function moveBricks(brick)
-{
-    brick.posX += sensBrick;
-    if(scrollY == true)
-    brick.posY -= gravityBrick;
-}
-
 /********************************Wall Collision************************************/
 function detectWallCollision()
 {
@@ -519,6 +475,80 @@ function detectBrickCollision()
         }
 }
 
+//*********************Scroll Brick Functions******************************** */
+function brickScrollX() //scroll Brick in X
+{
+    if(scrollX == true)
+    {
+        let breakStatus = false; // to go out first for
+
+        for(let line of tabBricks) 
+        {
+            if(breakStatus == true) break;
+
+            else
+            {    
+                for (let brick of line)
+                {
+                    if( (brick.posX <= 0 || brick.posX + brick.l >= canvasW) && brick.status>0)
+                    {   
+                        sensBrick = -sensBrick;
+                        breakStatus = true;
+                        break;
+                    } 
+                }
+            }
+        }
+
+        for(let line of tabBricks) 
+            for (let brick of line) 
+                brick.posX += sensBrick;
+    }
+}
+
+function brickScrollY() //scroll Brick in Y
+{
+    if(scrollY == true && beginScrollY == true)
+    {
+        let breakStatus = false; // to go out first for
+        
+        for(let line of tabBricks) 
+        {
+            if(breakStatus == true) break;
+
+            for (let brick of line)
+            {
+                if(brick.status >0)
+                {
+                    if (brick.posY + brick.h >= canvasH - paddle.h) //ground
+                    {
+                        gravityBrick = -gravityBrick*10;
+                        losingLife();
+                        setTimeout(()=> gravityBrick = gravityBrick/10 ,250);
+                        break;
+                    }
+
+                    else if(brick.posY <= 0) //roof
+                    {
+                        gravityBrick = -gravityBrick;
+                        break;
+                    }
+                }
+            }
+        }
+            
+        for(let line of tabBricks) 
+            for (let brick of line) 
+                brick.posY -= gravityBrick;            
+    }
+}
+        
+function bricksAnimation()
+{
+    brickScrollX();
+    brickScrollY();
+}     
+
 /************************************Function Bricks Powers***********************/
 function resetPower()
 {
@@ -532,9 +562,9 @@ function resetPower()
     music.playbackRate = 1;
 }
 
-function power(item)
+function power(brick)
 { 
-    if(item.color == "firebrick")
+    if(brick.color == "firebrick")
     {
         sens = (sens>=0)? 6 : -6; //ball faster
         music.playbackRate = 1.4;
@@ -547,7 +577,7 @@ function power(item)
         },5000);
     }
 
-    if(item.color == "snow")
+    if(brick.color == "snow")
     {	
         sens    = (sens>=0)?  1.5 : -1.5; //ball slower
         gravity = (gravity>=0)?  2 : -2;
@@ -561,7 +591,7 @@ function power(item)
         },5000);
     }
     
-    if(item.color == "chartreuse") //random sens
+    if(brick.color == "chartreuse") //random sens
     {
         sens    = 0;
         gravity = 1;
@@ -577,7 +607,7 @@ function power(item)
         },1000);
     }
 
-    if(item.color == "yellow") //paddle bigger
+    if(brick.color == "yellow") //paddle bigger
     {
         bigger.play();
         paddle.l += 20; 
@@ -585,7 +615,7 @@ function power(item)
         info.textContent = "Yeah, paddle is bigger!";
     }
     
-    if(item.color == "dimGray") //paddle smaller
+    if(brick.color == "dimGray") //paddle smaller
     {
         smaller.play();
         paddle.l-=20;
@@ -593,49 +623,49 @@ function power(item)
         info.textContent = "What!!!, paddle is smaller!";
     }
 
-    if(item.color == "burlyWood") //paddle speed lower
+    if(brick.color == "burlyWood") //paddle speed lower
     {
         paddleSpeed  = 5;
         paddle.color = "burlyWood";
         info.textContent = "Nooo! Paddle is slower!";
-        setTimeout(()=>{resetPower()},5000);
+        setTimeout(()=> resetPower(),5000);
     }
     
-    if(item.color == "purple") //paddle speed faster
+    if(brick.color == "purple") //paddle speed faster
     {
         paddleSpeed  = 15;
         paddle.color = "purple";
         info.textContent = "Paddle is faster!";
-        setTimeout(()=>{resetPower()},5000);
+        setTimeout(()=> resetPower(),5000);
     }
 
-    if(item.color == "darkGreen") //ball bigger
+    if(brick.color == "darkGreen") //ball bigger
     {
         ball.radius = 20; 
         ball.color  = "darkGreen";
         info.textContent = "What's that? a big ball?!";
-        setTimeout(()=>{resetPower()},5000);
+        setTimeout(()=> resetPower(),5000);
     }
 
-    if(item.color == "black") //ball smaller
+    if(brick.color == "black") //ball smaller
     {
         ballSmall.play();
         ball.radius = 4; 
         ball.color  = "black";
         info.textContent = "What's that? a small ball?!";
-        setTimeout(()=>{resetPower()},5000);
+        setTimeout(()=> resetPower(),5000);
     }
 
-    if(item.color == "hotpink") //Extra Life
+    if(brick.color == "hotpink") //Extra Life
     {
         life++;
         heartUpdate();
         info.textContent = "Yeah! Extra Life!";
         extraLife.play();
-        setTimeout(()=>{resetPower()},2000);
+        setTimeout(()=> resetPower(),2000);
     }
 
-    if(item.color == "powderBlue") //Ball on paddle
+    if(brick.color == "powderBlue") //Ball on paddle
     {
         launch.play();
         info.textContent = "Yeah! The ball on me!";
@@ -644,11 +674,10 @@ function power(item)
 
         beginGame = false;
         init();
-        document.body.onkeyup = (e)=>
-        {if(e.key == " ") resetPower();};
+        document.body.onkeyup = (e)=> {if(e.key == " ") resetPower();};
     }
 
-    if(item.color == "red") //Extra Giant Ball
+    if(brick.color == "red") //Extra Giant Ball
     {
         init();
 
@@ -663,7 +692,7 @@ function power(item)
         },10);
     }
 
-    if(item.color == "cyan") //Extra Ball
+    if(brick.color == "cyan") //Extra Ball
     {
         rasengan.play();
         info.textContent = "Rasen Gan!!!";
@@ -675,14 +704,14 @@ function power(item)
             gravity = 0;
             if(ball.radius >= 70) clearInterval(interval);   
         },10);
-        setTimeout(()=>{resetPower()},1500);
+        setTimeout(()=> resetPower(),1500);
     }
 
-    if(item.color == "thistle") //change Scroll
+    if(brick.color == "thistle") //change Scroll
     {
         info.textContent = "Stop the Scroll, please!";
         gravityBrick = -gravityBrick;
-        setTimeout(()=>{info.textContent = "";},3000);
+        setTimeout(()=> info.textContent = "",3000);
     }
     
 }

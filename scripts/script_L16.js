@@ -5,10 +5,8 @@ const nLine  = 7; // number of lines
 const nCol   = 9; // number of columns
 const bricks = new Shape(20,50,50,20,0,"powderBlue"); //(posX,posY,l,h,radius,color)
 music.src    = "sounds/offroad.mp3";
-move = true;
+let scrollX = true;
 let sensBrick = 2;
-let gravityBrick = 0;
-
 
 function unlockNextLevel()
 {
@@ -44,8 +42,6 @@ function createBricks(tab)
         }
     }
 
-
-    
 //*************************Special Bricks************************* */
 tab[3][4].color = "red";
 tab[3][4].posX += 5;

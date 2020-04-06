@@ -5,8 +5,7 @@ const nLine  = 8; // number of lines
 const nCol   = 11; // number of columns
 const bricks = new Shape(40,20,50,20,0,"orange"); //(posX,posY,l,h,radius,color)
 music.src    = "sounds/offroad.mp3";
-move = true;
-let sensBrick = 0;
+let scrollY = true;
 let gravityBrick = 0.3;
 
 
