@@ -44,8 +44,6 @@ function createBricks(tab)
         }
     }
 
-
-    
 //*************************Special Bricks************************* */
 for(let i=0; i<nLine;i++)
 {

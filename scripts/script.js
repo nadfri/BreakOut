@@ -137,6 +137,8 @@ function launchGame()
 
         if(e.key == "Enter") document.location = "./index.html";//press enter to go to menu
         if(e.keyCode == 112 ) gamePause(); //Game paused by press on "p"
+
+        return false; // to avoid scroll by space bar
     };
 }
 
@@ -215,9 +217,8 @@ function victory()
     win.play();
     cancelAnimationFrame(animation);
 
-    setInterval( ()=>{info.textContent = "Press Space Bar to unlock the Next Level";}
-    ,1000); //TODO: clear all setTimeOut()
-
+    setInterval(()=> info.textContent = "Press Space Bar to unlock the Next Level",1000); 
+    //TODO: clear all setTimeOut()
     unlockNextLevel();
 }
 
@@ -231,13 +232,15 @@ function gamePause()
         stopAnimation = true;
         drawMessage("PAUSE",205);
         cancelAnimationFrame(animation); //Freeze Animation
+        keyP.src = "img/KeyPDown.png";
     }
 
     else 
     {
         music.play();
         stopAnimation = false;
-        requestAnimationFrame(motion); 
+        requestAnimationFrame(motion);
+        keyP.src = "img/KeyP.png";
     }          
 }   
 
@@ -279,13 +282,31 @@ function speakerControl()
 function paddleControl()
 {
     document.onkeydown = (e) =>{
-        if(e.key == "ArrowRight") paddleRight = true; 
-        if(e.key == "ArrowLeft" ) paddleLeft  = true;
+        if(e.key == "ArrowRight") 
+        {
+            paddleRight = true; 
+            imgRight.src = "img/RightArrowDown.png";
+        }
+
+        if(e.key == "ArrowLeft" )
+        {
+            paddleLeft = true; 
+            imgLeft.src = "img/LeftArrowDown.png";
+        }
     };
 
     document.onkeyup = (e) =>{
-        if(e.key == "ArrowRight") paddleRight = false;
-        if(e.key == "ArrowLeft" ) paddleLeft  = false;
+        if(e.key == "ArrowRight") 
+        {
+            paddleRight = false;
+            imgRight.src = "img/RightArrow.png";
+        } 
+
+        if(e.key == "ArrowLeft" )
+        {
+            paddleLeft = false;
+            imgLeft.src = "img/LeftArrow.png";
+        } 
     };
     
     if(paddleRight && paddle.posX < canvasW-paddle.l) paddle.posX+= paddleSpeed;
@@ -295,12 +316,13 @@ function paddleControl()
 /************************Functions to draw Bricks*********************/
 function updateNumberOfBricks()
 {
+    
     for(let line of tabBricks) //Count of bricks destroyed
         for (let brick of line) if (brick.status == 0) count--;
 }
 
 function updateDrawBricks()
-{       
+{      
     for(let line of tabBricks)  //Draw rest of bricks
         for (let brick of line)
             if (brick.status > 0 && count > 1)
@@ -312,6 +334,7 @@ function updateDrawBricks()
                 brick.color = "green";
                 brick.drawRect();
             }
+
 }
 
 
@@ -508,7 +531,7 @@ function brickScrollX() //scroll Brick in X
 
 function brickScrollY() //scroll Brick in Y
 {
-    if(scrollY == true && beginScrollY == true)
+    if(scrollY === true && beginScrollY === true)
     {
         let breakStatus = false; // to go out first for
         
@@ -715,9 +738,6 @@ function power(brick)
     }
     
 }
-
-
-
 
 
     /*****************************End of onload**********************/
