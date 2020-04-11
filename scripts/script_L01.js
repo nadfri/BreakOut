@@ -41,7 +41,7 @@ function createBricks(tab)
 	}
 
 //***********************Special Bricks*********************************************/
-	tab[1][6].color = "hotpink";
-	tab[2][4].color = "yellow";  
-	tab[1][4].color = "dimGray";
+	tab[1][4].color = "hotpink";
+	tab[3][7].color = "yellow";  
+	tab[3][0].color = "dimGray";
 }
