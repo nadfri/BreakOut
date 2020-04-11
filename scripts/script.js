@@ -237,7 +237,7 @@ function gamePause()
 
     else 
     {
-        music.play();
+        if(beginGame == true) music.play();
         stopAnimation = false;
         requestAnimationFrame(motion);
         keyP.src = "img/KeyP.png";
