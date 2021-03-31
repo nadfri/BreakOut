@@ -74,3 +74,7 @@ body {
 .unlocked:hover {
 	background: rgba(107, 186, 112, 0.8);
 }
+
+.unlocked img{
+	display:none;
+}
