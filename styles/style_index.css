@@ -1,66 +1,76 @@
-@import url('https://fonts.googleapis.com/css?family=Trade+Winds&display=swap');
+@import url("https://fonts.googleapis.com/css?family=Trade+Winds&display=swap");
 
-body{
-    background-color: gray;
+body {
+	background-color: gray;
 }
-#content{
-    margin: auto;
-    width: 700px;
-    height: 500px;
-    border: ridge 10px;
-    border-color: indianred;
+#content {
+	margin: auto;
+	width: 700px;
+	height: 500px;
+	border: ridge 10px;
+	border-color: indianred;
 
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: repeat(4, 1fr);
-    grid-column-gap: 10px;
-    grid-row-gap: 10px;
-    background: url(../img/menu.jpg);
-    background-size: cover;
-}
-
-.box{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: 'Trade Winds', cursive;
-    font-size: 30px;
-    color: black;
-    cursor: pointer;
-
-    border: 4px outset #A8ACBC;
-    border-radius: 6px;
+	display: grid;
+	grid-template-columns: repeat(5, 1fr);
+	grid-template-rows: repeat(4, 1fr);
+	grid-column-gap: 10px;
+	grid-row-gap: 10px;
+	background: url(../img/menu.jpg);
+	background-size: cover;
 }
 
-.box:active{
-    border: 4px inset #A8ACBC;
+.box {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-family: "Trade Winds", cursive;
+	font-size: 30px;
+	color: black;
+	cursor: pointer;
+
+	border: 4px outset #a8acbc;
+	border-radius: 6px;
 }
 
-
-.locked{
-
-    background: 
-    linear-gradient(45deg,  rgba(246,230,180,.1) 0%,rgba(237,144,23,.5) 100%),
-    url("../img/cadenas.png");
-    background-repeat: no-repeat;
-    background-position: center center;
-    cursor: not-allowed;
+.box:active {
+	border: 4px inset #a8acbc;
 }
 
-.locked:hover{
-    background: 
-    linear-gradient(45deg,  rgba(246,230,180,.1) 0%,rgba(237,144,23,1) 100%),
-    url("../img/cadenas.png");
-    background-repeat: no-repeat;
-    background-position: center center;
+.locked {
+	background: linear-gradient(
+		45deg,
+		rgba(246, 230, 180, 0.1) 0%,
+		rgba(237, 144, 23, 0.5) 100%
+	);
+	cursor: not-allowed;
+	position: relative;
 }
 
-
-.unlocked{
-    background: rgba(107,186,112,0.5);
+.locked:hover {
+	background: linear-gradient(
+		90deg,
+		rgba(246, 230, 180, 0.1) 0%,
+		rgba(237, 144, 23, 0.5) 100%
+	);
 }
 
-.unlocked:hover{
-    background: rgba(107,186,112,0.8);
+.locked:hover img {
+	opacity: 1;
 }
 
+.locked img {
+	position: absolute;
+	z-index: 1;
+	width: 50%;
+	opacity: 0;
+	transition: all 1s;
+}
+
+.unlocked {
+	background: rgba(107, 186, 112, 0.5);
+	transition: all 1s;
+}
+
+.unlocked:hover {
+	background: rgba(107, 186, 112, 0.8);
+}
