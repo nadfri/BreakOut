@@ -348,8 +348,12 @@ window.onload = () => {
         gravity = -gravity;
         ball.posY = paddle.posY - ball.radius - 1; //out ball from paddle
 
-        if (paddleRight) sens = +Math.abs(sens); //change sens of ball
-        if (paddleLeft) sens = -Math.abs(sens);
+        // Angle plus prononcé si le paddle est en mouvement
+        if (paddleRight) {
+          sens = Math.abs(sens) * 1.3; // Augmente l'angle vers la droite
+        } else if (paddleLeft) {
+          sens = -Math.abs(sens) * 1.3; // Augmente l'angle vers la gauche
+        }
       }
     //******************************Paddle Corner Collision*************************************/
     if (paddle.posY >= ball.posY && paddle.posY <= ball.posY + ball.radius)
@@ -359,6 +363,8 @@ window.onload = () => {
         //Left Corner
         gravity = -Math.abs(gravity);
         sens = sens > 0 ? -sens : sens;
+        // Effet du mouvement du paddle
+        if (paddleLeft) sens *= 1.2;
       } else if (
         paddle.posX + paddle.l >= ball.posX - ball.radius &&
         paddle.posX + paddle.l <= ball.posX
@@ -366,6 +372,8 @@ window.onload = () => {
         //Right Corner
         gravity = -Math.abs(gravity);
         sens = sens < 0 ? -sens : sens;
+        // Effet du mouvement du paddle
+        if (paddleRight) sens *= 1.2;
       }
   }
 
@@ -662,17 +670,39 @@ window.onload = () => {
         else ball.color = defaultState.ballColor;
         break;
       case 'extraBall':
-        // Restaure le mouvement de la balle
+        // Restaure le mouvement de la balle avec animation de rétrécissement
         if (!beginGame) {
           sens = sens >= 0 ? defaultState.sens : -defaultState.sens;
           gravity = gravity >= 0 ? defaultState.gravity : -defaultState.gravity;
         }
-        ball.radius = defaultState.ballRadius;
+        // Animation de rétrécissement
+        let shrinkCount = 0;
+        const shrinkInterval = setInterval(() => {
+          if (ball.radius > defaultState.ballRadius) {
+            ball.radius -= 1;
+            shrinkCount++;
+          } else {
+            ball.radius = defaultState.ballRadius;
+            clearInterval(shrinkInterval);
+          }
+          if (shrinkCount > 70) clearInterval(shrinkInterval);
+        }, 10);
         ball.color = defaultState.ballColor;
         paddle.color = defaultState.paddleColor;
         break;
       case 'finalFlash':
-        ball.radius = defaultState.ballRadius;
+        // Animation de rétrécissement
+        let flashShrinkCount = 0;
+        const flashShrinkInterval = setInterval(() => {
+          if (ball.radius > defaultState.ballRadius) {
+            ball.radius -= 2; // Plus rapide pour giant ball
+            flashShrinkCount++;
+          } else {
+            ball.radius = defaultState.ballRadius;
+            clearInterval(flashShrinkInterval);
+          }
+          if (flashShrinkCount > 230) clearInterval(flashShrinkInterval);
+        }, 10);
         ball.color = defaultState.ballColor;
         paddle.color = defaultState.paddleColor;
         paddle.l -= 20;
@@ -744,7 +774,7 @@ window.onload = () => {
     // dimGray : rétrécit la raquette (permanent et cumulable)
     if (brick.color == 'dimGray') {
       smaller.play();
-      paddle.l -= 20;
+      paddle.l -= 10;
       paddle.color = 'dimGray';
       info.textContent = 'What!!!, paddle is smaller!';
       setTimeout(() => {
