@@ -382,6 +382,8 @@ window.onload = () => {
     let marge = ball.radius; //marge of precision ball collision
     for (let line of tabBricks)
       for (let brick of line) {
+        if (brick.status <= 0) continue; // Ignore les briques déjà détruites
+        
         //********************Brick Horizontal Side*************************************/
         if (
           ball.posX > brick.posX &&
@@ -396,6 +398,7 @@ window.onload = () => {
             //bottom side
             ball.posY = ball.radius + brick.posY + brick.h + 1; //out ball
             brickStatusUpdate(brick, sens, -gravity);
+            continue;
           }
 
           if (
@@ -405,6 +408,7 @@ window.onload = () => {
             //top side
             ball.posY = brick.posY - ball.radius - 1;
             brickStatusUpdate(brick, sens, -gravity);
+            continue;
           }
         }
         //****************Brick Corner Bottom******************************************/
@@ -417,6 +421,7 @@ window.onload = () => {
             //left Bottom
             ball.posY = ball.radius + brick.posY + brick.h + 1; //out ball
             brickStatusUpdate(brick, sens, -gravity);
+            continue;
             //gravity = Math.abs(gravity);
             //sens    = (sens>0)? -sens : sens;
           } else if (
@@ -426,6 +431,7 @@ window.onload = () => {
             //Right Bottom
             ball.posY = ball.radius + brick.posY + brick.h + 1; //out ball
             brickStatusUpdate(brick, sens, -gravity);
+            continue;
             //gravity = Math.abs(gravity);
             //sens    = (sens<0)? -sens : sens;
           }
@@ -442,6 +448,7 @@ window.onload = () => {
             //Left Top
             ball.posY = brick.posY - ball.radius - 1;
             brickStatusUpdate(brick, sens, -gravity);
+            continue;
             //gravity = -Math.abs(gravity);
             //sens    = (sens>0)? -sens : sens;
           } else if (
@@ -451,6 +458,7 @@ window.onload = () => {
             //Right Top
             ball.posY = brick.posY - ball.radius - 1;
             brickStatusUpdate(brick, sens, -gravity);
+            continue;
             //gravity = -Math.abs(gravity);
             //sens    = (sens<0)? -sens : sens;
           }
@@ -469,6 +477,7 @@ window.onload = () => {
             //left brick side
             ball.posX = brick.posX - ball.radius - 1;
             brickStatusUpdate(brick, -sens, gravity);
+            continue;
           }
 
           if (
@@ -478,6 +487,7 @@ window.onload = () => {
             //right side
             ball.posX = brick.posX + brick.l + ball.radius + 1; //out ball of brick
             brickStatusUpdate(brick, -sens, gravity);
+            continue;
           }
         }
       }
@@ -647,7 +657,7 @@ window.onload = () => {
     // firebrick : accélère la balle
     if (brick.color == 'firebrick') {
       if (activePowers.speed) clearTimeout(activePowers.speed);
-      sens = sens >= 0 ? 6 : -6;
+      sens = sens >= 0 ? 4.5 : -4.5;
       music.playbackRate = 1.4;
       ball.color = 'firebrick';
       info.textContent = 'Faster!!!';
@@ -688,7 +698,9 @@ window.onload = () => {
       paddle.l += 20;
       paddle.color = 'yellow';
       info.textContent = 'Yeah, paddle is bigger!';
-      setTimeout(() => { info.textContent = ''; }, 2000);
+      setTimeout(() => {
+        info.textContent = '';
+      }, 2000);
     }
 
     // dimGray : rétrécit la raquette (permanent et cumulable)
@@ -697,7 +709,9 @@ window.onload = () => {
       paddle.l -= 20;
       paddle.color = 'dimGray';
       info.textContent = 'What!!!, paddle is smaller!';
-      setTimeout(() => { info.textContent = ''; }, 2000);
+      setTimeout(() => {
+        info.textContent = '';
+      }, 2000);
     }
 
     // burlyWood : ralentit la raquette
@@ -767,13 +781,31 @@ window.onload = () => {
     // red : la balle devient géante (Final Flash)
     if (brick.color == 'red') {
       // Annule tous les powers en cours sur la balle
-      if (activePowers.speed) { clearTimeout(activePowers.speed); activePowers.speed = null; }
-      if (activePowers.slow) { clearTimeout(activePowers.slow); activePowers.slow = null; }
-      if (activePowers.ballBig) { clearTimeout(activePowers.ballBig); activePowers.ballBig = null; }
-      if (activePowers.ballSmall) { clearTimeout(activePowers.ballSmall); activePowers.ballSmall = null; }
-      if (activePowers.random) { clearTimeout(activePowers.random); activePowers.random = null; }
-      if (activePowers.extraBall) { clearTimeout(activePowers.extraBall); activePowers.extraBall = null; }
-      
+      if (activePowers.speed) {
+        clearTimeout(activePowers.speed);
+        activePowers.speed = null;
+      }
+      if (activePowers.slow) {
+        clearTimeout(activePowers.slow);
+        activePowers.slow = null;
+      }
+      if (activePowers.ballBig) {
+        clearTimeout(activePowers.ballBig);
+        activePowers.ballBig = null;
+      }
+      if (activePowers.ballSmall) {
+        clearTimeout(activePowers.ballSmall);
+        activePowers.ballSmall = null;
+      }
+      if (activePowers.random) {
+        clearTimeout(activePowers.random);
+        activePowers.random = null;
+      }
+      if (activePowers.extraBall) {
+        clearTimeout(activePowers.extraBall);
+        activePowers.extraBall = null;
+      }
+
       if (activePowers.finalFlash) clearTimeout(activePowers.finalFlash);
       init();
       finalflash.play();
@@ -793,13 +825,31 @@ window.onload = () => {
     // cyan : la balle grossit, s'arrête, puis repart (Extra Ball)
     if (brick.color == 'cyan') {
       // Annule tous les powers en cours sur la balle
-      if (activePowers.speed) { clearTimeout(activePowers.speed); activePowers.speed = null; }
-      if (activePowers.slow) { clearTimeout(activePowers.slow); activePowers.slow = null; }
-      if (activePowers.ballBig) { clearTimeout(activePowers.ballBig); activePowers.ballBig = null; }
-      if (activePowers.ballSmall) { clearTimeout(activePowers.ballSmall); activePowers.ballSmall = null; }
-      if (activePowers.random) { clearTimeout(activePowers.random); activePowers.random = null; }
-      if (activePowers.finalFlash) { clearTimeout(activePowers.finalFlash); activePowers.finalFlash = null; }
-      
+      if (activePowers.speed) {
+        clearTimeout(activePowers.speed);
+        activePowers.speed = null;
+      }
+      if (activePowers.slow) {
+        clearTimeout(activePowers.slow);
+        activePowers.slow = null;
+      }
+      if (activePowers.ballBig) {
+        clearTimeout(activePowers.ballBig);
+        activePowers.ballBig = null;
+      }
+      if (activePowers.ballSmall) {
+        clearTimeout(activePowers.ballSmall);
+        activePowers.ballSmall = null;
+      }
+      if (activePowers.random) {
+        clearTimeout(activePowers.random);
+        activePowers.random = null;
+      }
+      if (activePowers.finalFlash) {
+        clearTimeout(activePowers.finalFlash);
+        activePowers.finalFlash = null;
+      }
+
       if (activePowers.extraBall) clearTimeout(activePowers.extraBall);
       rasengan.play();
       info.textContent = 'Rasen Gan!!!';
