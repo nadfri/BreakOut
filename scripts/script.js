@@ -168,6 +168,7 @@ window.onload = () => {
     life--;
     heartUpdate();
     beginGame = false;
+    clearAllTimers(); // Nettoie tous les timers actifs
     init();
   }
 
@@ -198,6 +199,7 @@ window.onload = () => {
     music.pause();
     gameover.play();
     cancelAnimationFrame(animation);
+    clearAllTimers(); // Nettoie tous les timers actifs
     info.textContent = 'Press Space Bar to play again';
 
     document.onkeypress = (e) => {
@@ -211,12 +213,12 @@ window.onload = () => {
     music.pause();
     win.play();
     cancelAnimationFrame(animation);
+    clearAllTimers(); // Nettoie tous les timers actifs avant d'en créer de nouveaux
 
-    setInterval(
+    victoryInterval = setInterval(
       () => (info.textContent = 'Press Space Bar to unlock the Next Level'),
       1000
     );
-    //TODO: clear all setTimeOut()
     unlockNextLevel();
   }
 
@@ -383,7 +385,7 @@ window.onload = () => {
     for (let line of tabBricks)
       for (let brick of line) {
         if (brick.status <= 0) continue; // Ignore les briques déjà détruites
-        
+
         //********************Brick Horizontal Side*************************************/
         if (
           ball.posX > brick.posX &&
@@ -533,7 +535,8 @@ window.onload = () => {
               //ground
               gravityBrick = -gravityBrick * 10;
               losingLife();
-              setTimeout(() => (gravityBrick = gravityBrick / 10), 250);
+              if (scrollTimeout) clearTimeout(scrollTimeout);
+              scrollTimeout = setTimeout(() => (gravityBrick = gravityBrick / 10), 250);
               break;
             } else if (brick.posY <= 0) {
               //roof
@@ -573,6 +576,12 @@ window.onload = () => {
     scroll: null,
   };
 
+  // Timers additionnels
+  let victoryInterval = null;
+  let finalFlashInterval = null;
+  let extraBallInterval = null;
+  let scrollTimeout = null;
+
   // Valeurs par défaut
   const defaultState = {
     paddleSpeed: 10,
@@ -584,6 +593,35 @@ window.onload = () => {
     sens: 2.5,
     gravity: 4,
   };
+
+  // Fonction pour nettoyer tous les timers actifs
+  function clearAllTimers() {
+    // Clear tous les timeouts des powers
+    Object.keys(activePowers).forEach((key) => {
+      if (activePowers[key]) {
+        clearTimeout(activePowers[key]);
+        activePowers[key] = null;
+      }
+    });
+
+    // Clear les intervals
+    if (victoryInterval) {
+      clearInterval(victoryInterval);
+      victoryInterval = null;
+    }
+    if (finalFlashInterval) {
+      clearInterval(finalFlashInterval);
+      finalFlashInterval = null;
+    }
+    if (extraBallInterval) {
+      clearInterval(extraBallInterval);
+      extraBallInterval = null;
+    }
+    if (scrollTimeout) {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = null;
+    }
+  }
 
   function restorePower(prop) {
     switch (prop) {
@@ -814,10 +852,14 @@ window.onload = () => {
       paddle.color = 'red';
       paddle.l += 20;
       let flashCount = 0;
-      const interval = setInterval(() => {
+      if (finalFlashInterval) clearInterval(finalFlashInterval);
+      finalFlashInterval = setInterval(() => {
         ball.radius += 1;
         flashCount++;
-        if (ball.radius >= 230 || flashCount > 220) clearInterval(interval);
+        if (ball.radius >= 230 || flashCount > 220) {
+          clearInterval(finalFlashInterval);
+          finalFlashInterval = null;
+        }
       }, 10);
       activePowers.finalFlash = setTimeout(() => restorePower('finalFlash'), 2000);
     }
@@ -856,12 +898,16 @@ window.onload = () => {
       ball.color = 'cyan';
       paddle.color = 'red';
       let extraCount = 0;
-      const interval = setInterval(() => {
+      if (extraBallInterval) clearInterval(extraBallInterval);
+      extraBallInterval = setInterval(() => {
         ball.radius += 1;
         sens = 0;
         gravity = 0;
         extraCount++;
-        if (ball.radius >= 70 || extraCount > 70) clearInterval(interval);
+        if (ball.radius >= 70 || extraCount > 70) {
+          clearInterval(extraBallInterval);
+          extraBallInterval = null;
+        }
       }, 10);
       // Après 1.5s, on restaure le mouvement
       activePowers.extraBall = setTimeout(() => {
