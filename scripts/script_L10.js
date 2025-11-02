@@ -70,7 +70,7 @@ function createBricks(tab)
 
     tab[4][1].color = "firebrick";
     tab[4][3].color = "firebrick";
-    tab[4][5].color = "firebrick";
+    tab[4][5].color = "cyan";
     tab[4][7].color = "firebrick";
     tab[4][9].color = "firebrick";
 

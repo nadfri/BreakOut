@@ -61,7 +61,7 @@ function createBricks(tab)
     tab[4][2].color = "hotpink";
 
     tab[8][2].color = "snow";
-    tab[8][9].color = "snow";
+    tab[8][9].color = "cyan";
     tab[6][1].color = "snow";
 
     tab[4][8].color = "chartreuse";

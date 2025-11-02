@@ -90,17 +90,23 @@ tab[3][nCol-3].status = 1;
 tab[nLine-3][nCol-1].color = "cyan";
 tab[nLine-3][nCol-1].status = 1;
 
+
+tab[4][4].color = "firebrick";
+tab[4][4].status = 1; 
+
 tab[7][3].color = "cyan";
 tab[7][3].status = 1;
 
 tab[1][3].color = "cyan";
 tab[1][3].status = 1;
 
+tab[0][0].color = "cyan";
+tab[0][nCol-1].status = 1;
 
 tab[nLine-1][nCol-1].color = "dimGray";
 tab[nLine-1][nCol-1].status = 1;
 
-tab[nLine-1][nCol-2].color = "dimGray";
+tab[nLine-1][nCol-2].color = "hotpink";
 tab[nLine-1][nCol-2].status = 1;
 
 tab[nLine-1][nCol-3].color = "dimGray";
@@ -137,7 +143,7 @@ tab[5][0].color = "purple";
 tab[5][0].status = 1;
 
 
-tab[nLine-1][0].color = "snow";
+tab[nLine-1][0].color = "yellow";
 tab[nLine-1][0].status = 1;
 
 tab[nLine-3][4].color = "snow";

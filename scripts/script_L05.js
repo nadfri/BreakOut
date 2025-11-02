@@ -46,7 +46,7 @@ function createBricks(tab)
 
 
     tab[11][1].color = "snow";
-    tab[11][5].color = "snow";
+    tab[11][5].color = "cyan";
     tab[14][2].color = "snow";
     tab[14][4].color = "snow";
     tab[nLine-5][3].color = "snow";

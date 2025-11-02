@@ -318,6 +318,9 @@ window.onload = () => {
 
   /********************************Wall Collision************************************/
   function detectWallCollision() {
+    // Désactive les collisions murales pendant Extra Ball et Final Flash (balle immobile)
+    if (activePowers.extraBall || activePowers.finalFlash) return;
+
     if (ball.posY + ball.radius >= canvasH) losingLife(); //Game lost
 
     if (ball.posY - ball.radius <= 0) {
@@ -341,6 +344,9 @@ window.onload = () => {
 
   /********************************Paddle Collision******************************************/
   function detectPaddleCollision() {
+    // Désactive les collisions paddle pendant Extra Ball et Final Flash (balle immobile)
+    if (activePowers.extraBall || activePowers.finalFlash) return;
+
     if (ball.posX > paddle.posX && ball.posX < paddle.posX + paddle.l)
       if (ball.posY + ball.radius >= paddle.posY && ball.posY < canvasH) {
         //ball between paddle limits in X
@@ -348,11 +354,14 @@ window.onload = () => {
         gravity = -gravity;
         ball.posY = paddle.posY - ball.radius - 1; //out ball from paddle
 
-        // Angle plus prononcé si le paddle est en mouvement
+        // Léger effet si le paddle est en mouvement (limité pour garder le contrôle)
+        const maxSpeed = 6; // Vitesse maximale réduite
         if (paddleRight) {
-          sens = Math.abs(sens) * 1.3; // Augmente l'angle vers la droite
+          sens = Math.abs(sens) * 1.1; // Augmentation plus douce
+          if (Math.abs(sens) > maxSpeed) sens = sens > 0 ? maxSpeed : -maxSpeed;
         } else if (paddleLeft) {
-          sens = -Math.abs(sens) * 1.3; // Augmente l'angle vers la gauche
+          sens = -Math.abs(sens) * 1.1; // Augmentation plus douce
+          if (Math.abs(sens) > maxSpeed) sens = sens > 0 ? maxSpeed : -maxSpeed;
         }
       }
     //******************************Paddle Corner Collision*************************************/
@@ -363,8 +372,12 @@ window.onload = () => {
         //Left Corner
         gravity = -Math.abs(gravity);
         sens = sens > 0 ? -sens : sens;
-        // Effet du mouvement du paddle
-        if (paddleLeft) sens *= 1.2;
+        // Effet du mouvement du paddle (limité)
+        const maxSpeed = 6;
+        if (paddleLeft) {
+          sens *= 1.1;
+          if (Math.abs(sens) > maxSpeed) sens = sens > 0 ? maxSpeed : -maxSpeed;
+        }
       } else if (
         paddle.posX + paddle.l >= ball.posX - ball.radius &&
         paddle.posX + paddle.l <= ball.posX
@@ -372,8 +385,12 @@ window.onload = () => {
         //Right Corner
         gravity = -Math.abs(gravity);
         sens = sens < 0 ? -sens : sens;
-        // Effet du mouvement du paddle
-        if (paddleRight) sens *= 1.2;
+        // Effet du mouvement du paddle (limité)
+        const maxSpeed = 6;
+        if (paddleRight) {
+          sens *= 1.1;
+          if (Math.abs(sens) > maxSpeed) sens = sens > 0 ? maxSpeed : -maxSpeed;
+        }
       }
   }
 
@@ -383,13 +400,20 @@ window.onload = () => {
     brick.status--;
     if (brick.status == 2) brick.color = 'rgba(255,165,0,0.5)';
     if (brick.status == 1) brick.color = 'orange';
-    sens = _sens;
-    gravity = _gravity;
+
+    // Pendant Extra Ball ou Final Flash, ne pas changer la direction de la balle
+    if (!activePowers.extraBall && !activePowers.finalFlash) {
+      sens = _sens;
+      gravity = _gravity;
+    }
+
     power(brick);
   }
 
   function detectBrickCollision() {
     let marge = ball.radius; //marge of precision ball collision
+    const isGiantBall = activePowers.extraBall || activePowers.finalFlash;
+
     for (let line of tabBricks)
       for (let brick of line) {
         if (brick.status <= 0) continue; // Ignore les briques déjà détruites
@@ -406,7 +430,7 @@ window.onload = () => {
             ball.posY - ball.radius >= brick.posY + brick.h - marge
           ) {
             //bottom side
-            ball.posY = ball.radius + brick.posY + brick.h + 1; //out ball
+            if (!isGiantBall) ball.posY = ball.radius + brick.posY + brick.h + 1; //out ball
             brickStatusUpdate(brick, sens, -gravity);
             continue;
           }
@@ -416,7 +440,7 @@ window.onload = () => {
             ball.posY + ball.radius < brick.posY + marge
           ) {
             //top side
-            ball.posY = brick.posY - ball.radius - 1;
+            if (!isGiantBall) ball.posY = brick.posY - ball.radius - 1;
             brickStatusUpdate(brick, sens, -gravity);
             continue;
           }
@@ -429,7 +453,7 @@ window.onload = () => {
         )
           if (brick.posX >= ball.posX && brick.posX <= ball.posX + ball.radius) {
             //left Bottom
-            ball.posY = ball.radius + brick.posY + brick.h + 1; //out ball
+            if (!isGiantBall) ball.posY = ball.radius + brick.posY + brick.h + 1; //out ball
             brickStatusUpdate(brick, sens, -gravity);
             continue;
             //gravity = Math.abs(gravity);
@@ -439,7 +463,7 @@ window.onload = () => {
             brick.posX + brick.l <= ball.posX
           ) {
             //Right Bottom
-            ball.posY = ball.radius + brick.posY + brick.h + 1; //out ball
+            if (!isGiantBall) ball.posY = ball.radius + brick.posY + brick.h + 1; //out ball
             brickStatusUpdate(brick, sens, -gravity);
             continue;
             //gravity = Math.abs(gravity);
@@ -456,7 +480,7 @@ window.onload = () => {
             //ball in Top Corner
 
             //Left Top
-            ball.posY = brick.posY - ball.radius - 1;
+            if (!isGiantBall) ball.posY = brick.posY - ball.radius - 1;
             brickStatusUpdate(brick, sens, -gravity);
             continue;
             //gravity = -Math.abs(gravity);
@@ -466,7 +490,7 @@ window.onload = () => {
             brick.posX + brick.l <= ball.posX
           ) {
             //Right Top
-            ball.posY = brick.posY - ball.radius - 1;
+            if (!isGiantBall) ball.posY = brick.posY - ball.radius - 1;
             brickStatusUpdate(brick, sens, -gravity);
             continue;
             //gravity = -Math.abs(gravity);
@@ -485,7 +509,7 @@ window.onload = () => {
             ball.posX + ball.radius < brick.posX + marge
           ) {
             //left brick side
-            ball.posX = brick.posX - ball.radius - 1;
+            if (!isGiantBall) ball.posX = brick.posX - ball.radius - 1;
             brickStatusUpdate(brick, -sens, gravity);
             continue;
           }
@@ -495,7 +519,7 @@ window.onload = () => {
             ball.posX - ball.radius > brick.posX + brick.l - marge
           ) {
             //right side
-            ball.posX = brick.posX + brick.l + ball.radius + 1; //out ball of brick
+            if (!isGiantBall) ball.posX = brick.posX + brick.l + ball.radius + 1; //out ball of brick
             brickStatusUpdate(brick, -sens, gravity);
             continue;
           }
@@ -589,6 +613,7 @@ window.onload = () => {
   let finalFlashInterval = null;
   let extraBallInterval = null;
   let scrollTimeout = null;
+  let ballResizeInterval = null; // animation générique de taille de balle (rétrécissement/agrandissement)
 
   // Valeurs par défaut
   const defaultState = {
@@ -601,6 +626,80 @@ window.onload = () => {
     sens: 2.5,
     gravity: 4,
   };
+
+  // S'assure que la balle reste entièrement dans l'écran après un changement de rayon
+  function enforceBallInside() {
+    if (ball.posX - ball.radius < 0) ball.posX = ball.radius + 1;
+    if (ball.posX + ball.radius > canvasW) ball.posX = canvasW - ball.radius - 1;
+    if (ball.posY - ball.radius < 0) ball.posY = ball.radius + 1;
+    if (ball.posY + ball.radius > canvasH) ball.posY = canvasH - ball.radius - 1;
+  }
+
+  // Animation générique du rayon de la balle vers une cible
+  function animateBallTo(targetRadius, step = 1, tickMs = 10, maxTicks = 1000) {
+    if (ballResizeInterval) {
+      clearInterval(ballResizeInterval);
+      ballResizeInterval = null;
+    }
+    // Si déjà à la taille, rien à faire
+    if (ball.radius === targetRadius) return;
+
+    const direction = ball.radius > targetRadius ? -1 : 1; // -1 pour rétrécir, 1 pour agrandir
+    let ticks = 0;
+    ballResizeInterval = setInterval(() => {
+      ball.radius += direction * step;
+      ticks++;
+      // Après chaque changement de rayon, recaler la position si elle sort de l'écran
+      if (direction > 0) {
+        enforceBallInside();
+      }
+      // bornes et arrêt
+      if (
+        (direction < 0 && ball.radius <= targetRadius) ||
+        (direction > 0 && ball.radius >= targetRadius) ||
+        ticks >= maxTicks
+      ) {
+        ball.radius = targetRadius;
+        // Recalage final
+        if (direction > 0) {
+          enforceBallInside();
+        }
+        clearInterval(ballResizeInterval);
+        ballResizeInterval = null;
+      }
+    }, tickMs);
+  }
+
+  // Gestion de priorité pour les powers de vitesse du paddle (dernier power actif l'emporte)
+  let paddlePowerSeq = 0; // compteur global
+  let paddleSlowSeq = 0; // numéro de séquence du dernier slow appliqué
+  let paddleFastSeq = 0; // numéro de séquence du dernier fast appliqué
+
+  function applyCurrentPaddleSpeedEffect() {
+    const slowActive = !!activePowers.paddleSlow;
+    const fastActive = !!activePowers.paddleFast;
+
+    if (slowActive && fastActive) {
+      // le plus récent (seq plus grand) gagne
+      if (paddleFastSeq > paddleSlowSeq) {
+        paddleSpeed = 15;
+        paddle.color = 'purple';
+      } else {
+        paddleSpeed = 5;
+        paddle.color = 'burlyWood';
+      }
+    } else if (slowActive) {
+      paddleSpeed = 5;
+      paddle.color = 'burlyWood';
+    } else if (fastActive) {
+      paddleSpeed = 15;
+      paddle.color = 'purple';
+    } else {
+      // aucun power actif
+      paddleSpeed = defaultState.paddleSpeed;
+      paddle.color = defaultState.paddleColor;
+    }
+  }
 
   // Fonction pour nettoyer tous les timers actifs
   function clearAllTimers() {
@@ -629,19 +728,73 @@ window.onload = () => {
       clearTimeout(scrollTimeout);
       scrollTimeout = null;
     }
+    if (ballResizeInterval) {
+      clearInterval(ballResizeInterval);
+      ballResizeInterval = null;
+    }
+
+    // Réapplique la bonne vitesse du paddle (revient par défaut car plus aucun power actif)
+    applyCurrentPaddleSpeedEffect();
+
+    // Restaure aussi la balle à l'état par défaut (taille/couleur)
+    ball.radius = defaultState.ballRadius;
+    ball.color = defaultState.ballColor;
+    music.playbackRate = defaultState.musicRate;
   }
 
   function restorePower(prop) {
     switch (prop) {
       case 'speed':
+        // Restaure la vitesse de la balle
+        sens = sens >= 0 ? defaultState.sens : -defaultState.sens;
+        gravity = gravity >= 0 ? defaultState.gravity : -defaultState.gravity;
+        music.playbackRate = defaultState.musicRate;
+        // Ne change la couleur que si aucun autre power de couleur n'est actif
+        if (activePowers.slow) ball.color = 'snow';
+        else if (activePowers.random) ball.color = 'paleGreen';
+        else if (activePowers.ballBig) ball.color = 'darkGreen';
+        else if (activePowers.ballSmall) ball.color = 'black';
+        else if (activePowers.powder) ball.color = 'white';
+        else ball.color = defaultState.ballColor;
+        break;
       case 'slow':
+        // Restaure la vitesse de la balle
+        sens = sens >= 0 ? defaultState.sens : -defaultState.sens;
+        gravity = gravity >= 0 ? defaultState.gravity : -defaultState.gravity;
+        music.playbackRate = defaultState.musicRate;
+        // Ne change la couleur que si aucun autre power de couleur n'est actif
+        if (activePowers.speed) ball.color = 'firebrick';
+        else if (activePowers.random) ball.color = 'paleGreen';
+        else if (activePowers.ballBig) ball.color = 'darkGreen';
+        else if (activePowers.ballSmall) ball.color = 'black';
+        else if (activePowers.powder) ball.color = 'white';
+        else ball.color = defaultState.ballColor;
+        break;
       case 'fire':
+        // Restaure la vitesse de la balle
+        sens = sens >= 0 ? defaultState.sens : -defaultState.sens;
+        gravity = gravity >= 0 ? defaultState.gravity : -defaultState.gravity;
+        music.playbackRate = defaultState.musicRate;
+        // Ne change la couleur que si aucun autre power de couleur n'est actif
+        if (activePowers.slow) ball.color = 'snow';
+        else if (activePowers.random) ball.color = 'paleGreen';
+        else if (activePowers.ballBig) ball.color = 'darkGreen';
+        else if (activePowers.ballSmall) ball.color = 'black';
+        else if (activePowers.powder) ball.color = 'white';
+        else ball.color = defaultState.ballColor;
+        break;
       case 'random':
         // Restaure la vitesse de la balle
         sens = sens >= 0 ? defaultState.sens : -defaultState.sens;
         gravity = gravity >= 0 ? defaultState.gravity : -defaultState.gravity;
-        ball.color = defaultState.ballColor;
         music.playbackRate = defaultState.musicRate;
+        // Ne change la couleur que si aucun autre power de couleur n'est actif
+        if (activePowers.speed) ball.color = 'firebrick';
+        else if (activePowers.slow) ball.color = 'snow';
+        else if (activePowers.ballBig) ball.color = 'darkGreen';
+        else if (activePowers.ballSmall) ball.color = 'black';
+        else if (activePowers.powder) ball.color = 'white';
+        else ball.color = defaultState.ballColor;
         break;
       case 'paddleBig':
         // Le power d'agrandissement est permanent, pas de restauration
@@ -650,63 +803,112 @@ window.onload = () => {
         // Le power de rétrécissement est permanent, pas de restauration
         break;
       case 'paddleSlow':
-        paddleSpeed = defaultState.paddleSpeed;
-        if (activePowers.paddleFast) paddle.color = 'purple';
-        else paddle.color = defaultState.paddleColor;
+        // La restauration standard passe maintenant par applyCurrentPaddleSpeedEffect
+        applyCurrentPaddleSpeedEffect();
         break;
       case 'paddleFast':
-        paddleSpeed = defaultState.paddleSpeed;
-        if (activePowers.paddleSlow) paddle.color = 'burlyWood';
-        else paddle.color = defaultState.paddleColor;
+        // La restauration standard passe maintenant par applyCurrentPaddleSpeedEffect
+        applyCurrentPaddleSpeedEffect();
         break;
       case 'ballBig':
-        ball.radius = defaultState.ballRadius;
+        // Restaure la taille normale avec une animation de rétrécissement
+        if (ball.radius > defaultState.ballRadius) {
+          animateBallTo(defaultState.ballRadius, 1, 10, 1000);
+        } else {
+          ball.radius = defaultState.ballRadius;
+        }
         if (activePowers.ballSmall) ball.color = 'black';
         else ball.color = defaultState.ballColor;
         break;
       case 'ballSmall':
-        ball.radius = defaultState.ballRadius;
+        // Restaure la taille normale avec une animation douce
+        if (ball.radius < defaultState.ballRadius) {
+          animateBallTo(defaultState.ballRadius, 1, 10, 1000);
+        } else {
+          ball.radius = defaultState.ballRadius;
+        }
         if (activePowers.ballBig) ball.color = 'darkGreen';
         else ball.color = defaultState.ballColor;
         break;
       case 'extraBall':
-        // Restaure le mouvement de la balle avec animation de rétrécissement
+        // Restaure le mouvement de la balle, garde la couleur CYAN pendant toute l'animation de retour
         if (!beginGame) {
           sens = sens >= 0 ? defaultState.sens : -defaultState.sens;
           gravity = gravity >= 0 ? defaultState.gravity : -defaultState.gravity;
         }
-        // Animation de rétrécissement
-        let shrinkCount = 0;
-        const shrinkInterval = setInterval(() => {
-          if (ball.radius > defaultState.ballRadius) {
-            ball.radius -= 1;
-            shrinkCount++;
-          } else {
-            ball.radius = defaultState.ballRadius;
-            clearInterval(shrinkInterval);
-          }
-          if (shrinkCount > 70) clearInterval(shrinkInterval);
-        }, 10);
-        ball.color = defaultState.ballColor;
-        paddle.color = defaultState.paddleColor;
-        break;
+        // Animation de rétrécissement, et reset de la couleur une fois terminé
+        {
+          let shrinkCount = 0;
+          const shrinkInterval = setInterval(() => {
+            if (ball.radius > defaultState.ballRadius) {
+              ball.radius -= 1;
+              shrinkCount++;
+            } else {
+              ball.radius = defaultState.ballRadius;
+              clearInterval(shrinkInterval);
+              // Ne remettre la couleur par défaut que si aucun autre power de balle n'est actif
+              const otherBallColorPowerActive =
+                activePowers.ballBig ||
+                activePowers.ballSmall ||
+                activePowers.speed ||
+                activePowers.slow ||
+                activePowers.random ||
+                activePowers.powder;
+              if (!otherBallColorPowerActive) {
+                ball.color = defaultState.ballColor;
+                paddle.color = defaultState.paddleColor;
+              }
+              info.textContent = '';
+              // Fin effective du power Extra Ball
+              activePowers.extraBall = null;
+            }
+            if (shrinkCount > 70) {
+              clearInterval(shrinkInterval);
+              // filet de sécurité si boucle interrompue
+              if (ball.radius < defaultState.ballRadius)
+                ball.radius = defaultState.ballRadius;
+            }
+          }, 10);
+        }
+        // On ne passe pas par le reset générique ici; on attend la fin de l'animation
+        return;
       case 'finalFlash':
-        // Animation de rétrécissement
-        let flashShrinkCount = 0;
-        const flashShrinkInterval = setInterval(() => {
-          if (ball.radius > defaultState.ballRadius) {
-            ball.radius -= 2; // Plus rapide pour giant ball
-            flashShrinkCount++;
-          } else {
-            ball.radius = defaultState.ballRadius;
-            clearInterval(flashShrinkInterval);
-          }
-          if (flashShrinkCount > 230) clearInterval(flashShrinkInterval);
-        }, 10);
-        ball.color = defaultState.ballColor;
-        paddle.color = defaultState.paddleColor;
-        paddle.l -= 20;
-        break;
+        // Conserver la couleur GOLD jusqu'à la fin de l'animation de retour
+        {
+          let flashShrinkCount = 0;
+          const flashShrinkInterval = setInterval(() => {
+            if (ball.radius > defaultState.ballRadius) {
+              ball.radius -= 2; // Plus rapide pour giant ball
+              flashShrinkCount++;
+            } else {
+              ball.radius = defaultState.ballRadius;
+              clearInterval(flashShrinkInterval);
+              // Ne remettre la couleur par défaut que si aucun autre power couleur n'est actif
+              const otherBallColorPowerActive =
+                activePowers.ballBig ||
+                activePowers.ballSmall ||
+                activePowers.speed ||
+                activePowers.slow ||
+                activePowers.random ||
+                activePowers.powder;
+              if (!otherBallColorPowerActive) {
+                ball.color = defaultState.ballColor;
+                paddle.color = defaultState.paddleColor;
+              }
+              // Restaure la longueur du paddle à la fin de l'effet
+              paddle.l -= 20;
+              info.textContent = '';
+              activePowers.finalFlash = null;
+            }
+            if (flashShrinkCount > 230) {
+              clearInterval(flashShrinkInterval);
+              if (ball.radius < defaultState.ballRadius)
+                ball.radius = defaultState.ballRadius;
+            }
+          }, 10);
+        }
+        // On ne passe pas par le reset générique ici; on attend la fin de l'animation
+        return;
       case 'scroll':
         // rien à restaurer
         break;
@@ -782,22 +984,36 @@ window.onload = () => {
       }, 2000);
     }
 
-    // burlyWood : ralentit la raquette
+    // burlyWood : ralentit la raquette (10s) — dernier power appliqué prévaut
     if (brick.color == 'burlyWood') {
       if (activePowers.paddleSlow) clearTimeout(activePowers.paddleSlow);
-      paddleSpeed = 5;
-      paddle.color = 'burlyWood';
       info.textContent = 'Nooo! Paddle is slower!';
-      activePowers.paddleSlow = setTimeout(() => restorePower('paddleSlow'), 5000);
+      // Met à jour la priorité
+      paddlePowerSeq++;
+      paddleSlowSeq = paddlePowerSeq;
+      // Programme l'expiration à 10s
+      activePowers.paddleSlow = setTimeout(() => {
+        activePowers.paddleSlow = null; // ce power n'est plus actif
+        restorePower('paddleSlow');
+      }, 10000);
+      // Applique l'effet courant en tenant compte de la priorité
+      applyCurrentPaddleSpeedEffect();
     }
 
-    // purple : accélère la raquette
+    // purple : accélère la raquette (10s) — dernier power appliqué prévaut
     if (brick.color == 'purple') {
       if (activePowers.paddleFast) clearTimeout(activePowers.paddleFast);
-      paddleSpeed = 15;
-      paddle.color = 'purple';
       info.textContent = 'Paddle is faster!';
-      activePowers.paddleFast = setTimeout(() => restorePower('paddleFast'), 5000);
+      // Met à jour la priorité
+      paddlePowerSeq++;
+      paddleFastSeq = paddlePowerSeq;
+      // Programme l'expiration à 10s
+      activePowers.paddleFast = setTimeout(() => {
+        activePowers.paddleFast = null; // ce power n'est plus actif
+        restorePower('paddleFast');
+      }, 10000);
+      // Applique l'effet courant en tenant compte de la priorité
+      applyCurrentPaddleSpeedEffect();
     }
 
     // darkGreen : agrandit la balle
@@ -806,14 +1022,16 @@ window.onload = () => {
       ball.radius = 20;
       ball.color = 'darkGreen';
       info.textContent = "What's that? a big ball?!";
+      enforceBallInside();
       activePowers.ballBig = setTimeout(() => restorePower('ballBig'), 5000);
     }
 
-    // black : rétrécit la balle
+    // black : rétrécit la balle (animation de rétrécissement)
     if (brick.color == 'black') {
       if (activePowers.ballSmall) clearTimeout(activePowers.ballSmall);
       ballSmall.play();
-      ball.radius = 4;
+      // Anime la réduction de la taille jusqu'à 4
+      animateBallTo(4, 1, 10, 1000);
       ball.color = 'black';
       info.textContent = "What's that? a small ball?!";
       activePowers.ballSmall = setTimeout(() => restorePower('ballSmall'), 5000);
@@ -833,6 +1051,12 @@ window.onload = () => {
 
     // powderBlue : la balle revient sur la raquette
     if (brick.color == 'powderBlue') {
+      // Si Extra Ball ou Final Flash sont actifs, ignorer PowderBlue (la balle doit rester à sa place)
+      if (activePowers.extraBall || activePowers.finalFlash) {
+        info.textContent = 'Not now...';
+        setTimeout(() => (info.textContent = ''), 1200);
+        return;
+      }
       launch.play();
       info.textContent = 'Yeah! The ball on me!';
       ball.color = 'white';
@@ -849,6 +1073,13 @@ window.onload = () => {
     // red : la balle devient géante (Final Flash)
     if (brick.color == 'red') {
       // Annule tous les powers en cours sur la balle
+      // Annule PowderBlue si actif pour éviter le retour sur la raquette
+      if (activePowers.powder) {
+        clearTimeout(activePowers.powder);
+        activePowers.powder = null;
+        restorePower('powder');
+      }
+      document.body.onkeyup = null;
       if (activePowers.speed) {
         clearTimeout(activePowers.speed);
         activePowers.speed = null;
@@ -875,7 +1106,10 @@ window.onload = () => {
       }
 
       if (activePowers.finalFlash) clearTimeout(activePowers.finalFlash);
-      init();
+      // Fige la balle à sa position actuelle (ne pas appeler init() qui repositionne)
+      sens = 0;
+      gravity = 0;
+      beginGame = true; // Empêche init() de repositionner la balle
       finalflash.play();
       info.textContent = 'Final Flash!!!';
       ball.color = 'gold';
@@ -886,6 +1120,7 @@ window.onload = () => {
       finalFlashInterval = setInterval(() => {
         ball.radius += 1;
         flashCount++;
+        enforceBallInside();
         if (ball.radius >= 230 || flashCount > 220) {
           clearInterval(finalFlashInterval);
           finalFlashInterval = null;
@@ -897,6 +1132,13 @@ window.onload = () => {
     // cyan : la balle grossit, s'arrête, puis repart (Extra Ball)
     if (brick.color == 'cyan') {
       // Annule tous les powers en cours sur la balle
+      // Annule PowderBlue si actif pour éviter le retour sur la raquette
+      if (activePowers.powder) {
+        clearTimeout(activePowers.powder);
+        activePowers.powder = null;
+        restorePower('powder');
+      }
+      document.body.onkeyup = null;
       if (activePowers.speed) {
         clearTimeout(activePowers.speed);
         activePowers.speed = null;
@@ -923,6 +1165,10 @@ window.onload = () => {
       }
 
       if (activePowers.extraBall) clearTimeout(activePowers.extraBall);
+      // Fige la balle immédiatement à sa position actuelle
+      sens = 0;
+      gravity = 0;
+      beginGame = true; // Empêche init() de repositionner la balle
       rasengan.play();
       info.textContent = 'Rasen Gan!!!';
       ball.color = 'cyan';
@@ -931,9 +1177,8 @@ window.onload = () => {
       if (extraBallInterval) clearInterval(extraBallInterval);
       extraBallInterval = setInterval(() => {
         ball.radius += 1;
-        sens = 0;
-        gravity = 0;
         extraCount++;
+        enforceBallInside();
         if (ball.radius >= 70 || extraCount > 70) {
           clearInterval(extraBallInterval);
           extraBallInterval = null;
